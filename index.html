@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>悉尼高尔夫球场概览 · Sydney Golf Courses</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root{
+    --bg: #0c1712;
+    --bg-alt: #101d17;
+    --surface: #15251d;
+    --surface-hi: #1b3226;
+    --line: #27402f;
+    --cream: #eef5ec;
+    --cream-dim: #a3c0a8;
+    --slate: #5f7a68;
+    --flag: #e2733a;
+    --flag-dim: #b85a2b;
+    --fairway: #4fae6d;
+    --good: #6fcf97;
+    --warn: #f2c14e;
+    --bad: #e0685a;
+    --rose: #c65b6c;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(79,174,109,0.10), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 0%, rgba(226,115,58,0.07), transparent 55%),
+      var(--bg);
+    color: var(--cream);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 40px 24px 80px;
+  }
+  .wrap{ max-width: 1180px; margin: 0 auto; }
+
+  header{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    flex-wrap: wrap; gap: 16px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 20px; margin-bottom: 28px;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.18em;
+    color: var(--flag); text-transform:uppercase; margin-bottom:8px;
+  }
+  h1{
+    font-family:'Oswald', sans-serif; font-weight:700; font-size: 38px;
+    letter-spacing: 0.01em; color: var(--cream); text-transform: uppercase;
+    line-height: 1.05;
+  }
+  h1 span{ color: var(--cream-dim); font-weight: 500; }
+  .sub{
+    font-family:'JetBrains Mono', monospace; font-size:12px; color: var(--slate);
+    text-align:right; line-height:1.6; max-width: 320px;
+  }
+
+  .map-wrap{
+    background: var(--surface); border:1px solid var(--line); border-radius:8px;
+    padding: 14px; margin-bottom: 28px;
+  }
+  #map{ height: 420px; border-radius: 6px; }
+  .legend{ display:flex; gap:18px; flex-wrap:wrap; margin-top:12px; font-family:'JetBrains Mono', monospace; font-size:11px; color: var(--cream-dim); }
+  .legend .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; margin-right:6px; vertical-align:middle; }
+
+  .controls{ display:flex; gap:20px; flex-wrap:wrap; margin-bottom: 28px; align-items:center; }
+  .control-group{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .control-lbl{ font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color: var(--slate); margin-right: 2px; }
+  .controls button{
+    font-family:'JetBrains Mono', monospace; font-size:12px;
+    background: var(--surface); color: var(--cream-dim);
+    border: 1px solid var(--line); border-radius: 100px;
+    padding: 8px 16px; cursor:pointer; transition: all .15s ease;
+    letter-spacing: 0.02em;
+  }
+  .controls button:hover{ border-color: var(--fairway); color: var(--cream); }
+  .controls button.active{
+    background: var(--fairway); border-color: var(--fairway); color: #06170d; font-weight: 600;
+  }
+
+  .count-line{
+    font-family:'JetBrains Mono', monospace; font-size:12px; color: var(--cream-dim);
+    margin-bottom: 14px; letter-spacing: 0.02em;
+  }
+
+  .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; }
+
+  .card{
+    background: var(--surface); border: 1px solid var(--line); border-radius: 6px;
+    padding: 22px; position: relative; overflow: hidden;
+    transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+    scroll-margin-top: 20px;
+  }
+  .card:hover{ border-color: var(--fairway); transform: translateY(-2px); }
+  .card.flash{ border-color: var(--flag); box-shadow: 0 0 0 2px rgba(226,115,58,0.35); }
+  .card::before{
+    content:""; position:absolute; top:0; left:0; right:0; height:3px;
+    background: linear-gradient(90deg, var(--fairway), var(--flag));
+    opacity:0; transition: opacity .2s ease;
+  }
+  .card:hover::before{ opacity: 1; }
+
+  .card-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:2px; }
+  .course-name{ font-family:'Oswald', sans-serif; font-weight:600; font-size:21px; text-transform: uppercase; letter-spacing: 0.01em; line-height:1.2; }
+  .type-badge{
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:.04em; text-transform:uppercase;
+    padding: 4px 9px; border-radius: 100px; white-space:nowrap; flex-shrink:0; margin-top:3px;
+  }
+  .type-badge.public{ background: rgba(79,174,109,0.15); color: var(--good); border:1px solid rgba(79,174,109,0.4); }
+  .type-badge.semi-private{ background: rgba(242,193,78,0.15); color: var(--warn); border:1px solid rgba(242,193,78,0.4); }
+  .type-badge.private{ background: rgba(198,91,108,0.15); color: var(--rose); border:1px solid rgba(198,91,108,0.4); }
+
+  .course-meta{ font-family:'JetBrains Mono', monospace; font-size:11px; color: var(--slate); margin-bottom: 16px; }
+
+  .section-lbl{
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+    color: var(--slate); border-top: 1px solid var(--line); padding-top:12px; margin-top:14px; margin-bottom:10px;
+  }
+
+  .stats{ display:flex; flex-direction:column; gap:9px; }
+  .stat{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:13px; }
+  .stat .k{ color: var(--slate); flex-shrink:0; }
+  .stat .v{ font-family:'JetBrains Mono', monospace; color: var(--cream); font-weight:500; text-align:right; }
+  .stat .v.na{ color: var(--slate); font-weight:400; }
+  .stat .v.price{ color: var(--fairway); }
+
+  .note-banner{
+    font-family:'JetBrains Mono', monospace; font-size:11px; line-height:1.5; color: var(--warn);
+    background: rgba(242,193,78,0.08); border:1px solid rgba(242,193,78,0.3); border-radius:4px;
+    padding: 8px 10px; margin-bottom: 14px;
+  }
+
+  .tag-row{ display:flex; gap:6px; flex-wrap:wrap; margin-top:16px; }
+  .tag{
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:.03em;
+    background: var(--bg-alt); border:1px solid var(--line); color: var(--cream-dim);
+    padding: 4px 9px; border-radius: 100px; text-transform:uppercase;
+  }
+
+  .link-row{ display:flex; gap:14px; flex-wrap:wrap; margin-top:14px; }
+  .src-link{ font-family:'JetBrains Mono', monospace; font-size:10px; color: var(--slate); text-decoration:none; border-bottom:1px dotted var(--slate); }
+  .src-link:hover{ color: var(--fairway); border-color: var(--fairway); }
+  .src-link.primary{ color: var(--flag); border-color: var(--flag-dim); font-size:11px; }
+  .src-link.primary:hover{ color: var(--flag); }
+
+  footer{
+    margin-top: 40px; padding-top: 20px; border-top:1px solid var(--line);
+    font-family:'JetBrains Mono', monospace; font-size:11px; color: var(--slate); line-height: 1.8;
+  }
+  footer b{ color: var(--cream-dim); }
+
+  @media (max-width: 640px){
+    h1{ font-size: 28px; }
+    header{ flex-direction:column; align-items:flex-start; }
+    .sub{ text-align:left; }
+    #map{ height: 320px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="eyebrow">Sydney · NSW · Golf Courses</div>
+      <h1>悉尼高尔夫球场概览 <span>/ Sydney Golf Courses</span></h1>
+    </div>
+    <div class="sub">
+      公共 / 半私人 / 私人球场信息一览：洞数、标准杆、坡度评级、预定方式与价格、球车租赁。<br>
+      Golf NSW 官方统计悉尼都会区约有88家俱乐部；本站已收录91个（含少数近郊/霍克斯伯里边界球场及近期更名合并的球会），力求覆盖完整，但请以官网最新信息为准。<br>
+      数据来源见各卡片底部链接。
+    </div>
+  </header>
+
+  <div class="map-wrap">
+    <div id="map"></div>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--good);"></span>公共 Public</span>
+      <span><span class="dot" style="background:var(--warn);"></span>半私人 Semi-private</span>
+      <span><span class="dot" style="background:var(--rose);"></span>私人 Private</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <span class="control-lbl">类型</span>
+      <button class="active" data-filter="all">全部</button>
+      <button data-filter="public">公共</button>
+      <button data-filter="semi-private">半私人</button>
+      <button data-filter="private">私人</button>
+    </div>
+    <div class="control-group">
+      <span class="control-lbl">排序</span>
+      <button class="active" data-sort="default">默认</button>
+      <button data-sort="holes">按洞数</button>
+      <button data-sort="slope">按坡度评级</button>
+      <button data-sort="price">按工作日价格</button>
+    </div>
+  </div>
+
+  <div class="count-line" id="courseCount"></div>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    <b>数据来源说明：</b>各球场的洞数、标准杆、坡度/球场评级、价格、预定方式等信息通过公开渠道（官网、Golf Australia、Golf NSW 及第三方球场数据库）研究整理，标注为 <b>N/A</b> 或 "per third-party" 的字段代表官方未公开或未能独立核实，仅供参考。
+    经纬度坐标为地址/区域估算值，非精确测绘。私人球场（Private）通常不对外公开预定或价格，仅会员及受邀嘉宾可打球；半私人（Semi-private）球场多数情况下也需会员带同或特定开放日才能预定。
+    价格、开放政策会随时间变化，预定前请务必以官网或致电俱乐部确认为准。<br>
+    <b>球场平面图：</b>每张卡片的"🛰 卫星图"链接跳转 Google Maps 卫星视图，可查看球场真实布局；部分球场（Bondi、Marrickville、Bonnie Doon、Royal Sydney、The Australian、Concord）额外提供"📄 官方球场指南"链接，含各洞码数/布局信息。其余球场未找到公开的官方球场指南页面，暂只提供卫星图。<br>
+    <b>覆盖范围：</b>Golf NSW 官方数据显示悉尼都会区（北至Palm Beach、南至Cronulla）约有88家高尔夫俱乐部，本站已收录91个（含部分Hawkesbury西北边界球场）。研究过程中确认已永久关闭并排除的球场：Hudson Park Golf Course（2019年关闭）、Kogarah Golf Club（2025年3月关闭并入Oak Point）、Riverlands Golf Club（约2010年关闭）、Royal Australian Engineers Golf Club（2015年关闭）。部分球会近年更名/合并：Liverpool Golf Club → Oak Point Golf Club，New Brighton Golf Club → Brighton Lakes Recreation & Golf Club，Chatswood Golf Club → Newgreens Chatswood。若你发现遗漏或信息有误的球场，欢迎指出。<br>
+    <b>下一步可加：</b>更多球场的官方逐洞平面图核实、更精确的官方坡度评级核实、实时空位查询（需对接各俱乐部预定系统 API）。
+  </footer>
+
+</div>
+
+<script>
+const courses = [
+  {
+    name: "Moore Park Golf", type: "public", suburb: "Moore Park",
+    address: "Corner Anzac Parade & Cleveland Street, Moore Park, Sydney NSW 2021",
+    lat: -33.8956, lon: 151.2210,
+    holes: "10（过渡期布局，2026年7月1日起启用；原18洞球场因Moore Park South改造工程关闭）",
+    par: "N/A - 过渡期10洞球场标准杆未公开（原18洞球场 par 70，已不适用）",
+    courseRating: "N/A - 原评级适用于已关闭的18洞球场，过渡期球场未评级", slopeRating: "N/A - 同上",
+    greenFeeWeekday: "AUD $39（10洞，周一至四）/ $25 暮色场", greenFeeWeekend: "AUD $46（10洞，周五至日）/ $30 暮色场",
+    cartHire: "电动球车 $40（正常时段）/ $30（暮色场）；手拉车 $5；球杆租赁 标准 $35/$28，高级 $46/$35",
+    bookingMethod: "在线预定 moorepark.miclub.com.au，或电话",
+    phone: "(02) 9663 1064", website: "https://mooreparkgolf.com.au",
+    tags: ["公共球场", "过渡期改造中", "市中心", "2028年建成12洞永久球场"],
+    sourceUrl: "https://mooreparkgolf.com.au/changes-coming-to-moore-park-golf/",
+    note: "Moore Park South 改造工程：2026年7月起先改为10洞，预计2026年10月扩展为过渡12洞，永久12洞公共球场预计2028年完工。"
+  },
+  {
+    name: "Bondi Golf & Diggers Club", type: "public", suburb: "North Bondi",
+    address: "5 Military Rd, North Bondi, NSW 2026",
+    lat: -33.8905, lon: 151.2822,
+    holes: 9, par: 28,
+    courseRating: "56（男子，第三方数据库；官方Golf Australia未公开）", slopeRating: "95（男子，第三方数据库；官方未公开）",
+    greenFeeWeekday: "AUD $25（9洞）/ $30（18洞）", greenFeeWeekend: "AUD $30（9洞）/ $37（18洞）",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "无需预约，先到先得；10人以上团体联系球具室",
+    phone: "(02) 9130 3170", website: "https://www.bondigolf.com.au",
+    tags: ["海景", "Par-3风格短球场", "新手友好", "地标位置"],
+    sourceUrl: "https://www.bondigolf.com.au/cms/play-golf/",
+    guideUrl: "https://course.bluegolf.com/bluegolf/course/course/bondi/detailedscorecard.htm"
+  },
+  {
+    name: "Marrickville Golf, Sporting & Community Club", type: "public", suburb: "Marrickville",
+    address: "Wharf Street, Marrickville, NSW 2204",
+    lat: -33.9070, lon: 151.1560,
+    holes: 18, par: "60（男）/ 62（女）— 短打型球场",
+    courseRating: "N/A - 未公开", slopeRating: "N/A - 未公开",
+    greenFeeWeekday: "AUD $38（18洞）/ $28（9洞）", greenFeeWeekend: "AUD $45（18洞）/ $31（9洞）；暮色场 $25（每日15点后不限洞数）",
+    cartHire: "球车 $42（18洞）/ $30（9洞）；手拉车 $6",
+    bookingMethod: "在线 marrickville-golf-club.book.teeitup.com 或电话球具室",
+    phone: "(02) 9558 6862", website: "https://www.marrickvillegolf.com.au",
+    tags: ["河畔", "短球场", "新手友好", "性价比高"],
+    sourceUrl: "https://www.marrickvillegolf.com.au/fees-and-schedule",
+    guideUrl: "https://www.marrickvillegolf.com.au/course-guide"
+  },
+  {
+    name: "Warringah Golf Club", type: "public", suburb: "North Manly",
+    address: "292 Condamine Street, North Manly, NSW 2100",
+    lat: -33.7676, lon: 151.2705,
+    holes: 18, par: "70（男）/ 69（女）",
+    courseRating: "70.2（蓝T台，男子）", slopeRating: "124（蓝T台，男子）",
+    greenFeeWeekday: "AUD 约$20-$50（18洞）— 官网未列当前具体价格，二手来源约$20", greenFeeWeekend: "N/A - 未确认，请联系球会",
+    cartHire: "N/A - 官网未列",
+    bookingMethod: "官网在线预定系统，或电话",
+    phone: "(02) 9905 4709（办公室）/ (02) 9905 1326（球具室）", website: "https://www.warringahgolfclub.com.au",
+    tags: ["公共球场", "社交高尔夫热门", "北部海滩区", "1935年建立"],
+    sourceUrl: "https://www.warringahgolfclub.com.au/"
+  },
+  {
+    name: "Long Reef Golf Club", type: "public", suburb: "Collaroy",
+    address: "Anzac Avenue, Collaroy, NSW 2097",
+    lat: -33.7368, lon: 151.3007,
+    holes: 18, par: "71（男）/ 73（女）",
+    courseRating: "73（男子 scratch，黑T台）", slopeRating: "133（黑T）/ 130（蓝T）/ 129（白T）/ 120（黄T）",
+    greenFeeWeekday: "AUD $55（18洞）/ $32（9洞）；长者/学生 $20（18洞）", greenFeeWeekend: "AUD $65（18洞）/ $40（9洞）",
+    cartHire: "N/A - 官网未确认，请联系球具室",
+    bookingMethod: "在线 longreef.miclub.com.au 或电话",
+    phone: "(02) 9971 8113", website: "https://longreefgolfclub.com.au",
+    tags: ["海景", "全景海岸线", "公共球场", "锦标赛级别布局"],
+    sourceUrl: "https://longreefgolfclub.com.au/green-fees-publicsocial/"
+  },
+  {
+    name: "St Michael's Golf Club", type: "semi-private", suburb: "Little Bay",
+    address: "Jennifer Street, Little Bay, NSW 2035",
+    lat: -33.9700, lon: 151.2400,
+    holes: 18, par: 72,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "多数工作日欢迎访客；周四公开赛约$100，国际/州际访客约$120（二手来源，未经官方确认）", greenFeeWeekend: "N/A - 请联系球会确认",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "直接联系球会/官网；特定日期对公众开放",
+    phone: "(02) 9311 0068", website: "https://www.stmichaelsgolf.com.au",
+    tags: ["锦标赛级别林克斯球场", "海岸线", "新州顶级球场", "1938年建立"],
+    sourceUrl: "https://www.stmichaelsgolf.com.au/cms/membership/golf-courses-sydney/"
+  },
+  {
+    name: "Eastlake Golf Club", type: "semi-private", suburb: "Kingsford",
+    address: "67 Gardeners Road, Kingsford, NSW 2032",
+    lat: -33.9270, lon: 151.2270,
+    holes: 18, par: 72,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $75 高峰 / $65 暮色 / $50 落日场 / $30 青少年（17岁以下）", greenFeeWeekend: "AUD $90 高峰 / $80 暮色 / $60 落日场 / $30 青少年",
+    cartHire: "AUD $55 高峰 / $40 落日场",
+    bookingMethod: "官网访客在线预定；团体预定另收$5/人手续费",
+    phone: "(02) 9663 1374", website: "https://www.eastlakegolfclub.com.au",
+    tags: ["半私人", "距CBD 15分钟", "维护良好", "访客友好"],
+    sourceUrl: "https://www.eastlakegolfclub.com.au/cms/play/green-fees/"
+  },
+  {
+    name: "Bonnie Doon Golf Club", type: "semi-private", suburb: "Pagewood",
+    address: "Banks Avenue, Pagewood, NSW 2035",
+    lat: -33.9420, lon: 151.2210,
+    holes: 18, par: 71,
+    courseRating: "71.8（第三方数据库，官方未确认）", slopeRating: "134（第三方数据库，官方未确认）",
+    greenFeeWeekday: "未公开 - 会员及受邀嘉宾，访客价格需联系球会", greenFeeWeekend: "仅限会员及嘉宾（无公开访客价格）",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "常规仅限会员；访客须由会员带同，具体政策请联系球会",
+    phone: "(02) 9349 2101", website: "https://www.bdgc.com.au",
+    tags: ["历史悠久（1897年）", "起伏果岭", "东郊", "悉尼第三古老球会"],
+    sourceUrl: "https://www.bdgc.com.au/cms/",
+    guideUrl: "https://course.bluegolf.com/bluegolf/course/course/bonniedoon/detailedscorecard.htm"
+  },
+  {
+    name: "Pennant Hills Golf Club", type: "semi-private", suburb: "Beecroft",
+    address: "Cnr Copeland & Burns Road South, Beecroft, NSW 2119",
+    lat: -33.7480, lon: 151.0680,
+    holes: 18, par: 71,
+    courseRating: "71（第三方数据库）", slopeRating: "130（第三方数据库）",
+    greenFeeWeekday: "仅限会员及会员嘉宾；偶有 Iseekgolf 公开日", greenFeeWeekend: "仅限会员及会员嘉宾",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "会员制/会员嘉宾；偶有开放日，请联系球会",
+    phone: "(02) 8860 5800", website: "https://www.pennanthillsgolfclub.com.au",
+    tags: ["林荫球道", "风景优美", "Hills区", "悉尼顶级球会"],
+    sourceUrl: "https://www.pennanthillsgolfclub.com.au/cms/visitors/contacts/"
+  },
+  {
+    name: "Killara Golf Club", type: "semi-private", suburb: "Killara",
+    address: "556 Pacific Highway, Killara, NSW 2071",
+    lat: -33.7660, lon: 151.1580,
+    holes: 18, par: 72,
+    courseRating: "72.7（第三方数据库）", slopeRating: "126（第三方数据库）",
+    greenFeeWeekday: "仅限会员及嘉宾；访客需会员带同（无公开价格）", greenFeeWeekend: "仅限会员及嘉宾",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "会员制/会员嘉宾 - 访客政策请联系球会",
+    phone: "(02) 9498 2700（办公室）/ (02) 9498 6730（球具室）", website: "https://www.kgc.com.au",
+    tags: ["北岸", "1899年建立", "会员带同访客", "林荫球道"],
+    sourceUrl: "https://www.kgc.com.au/cms/contact/"
+  },
+  {
+    name: "Cromer Golf Club", type: "semi-private", suburb: "Cromer",
+    address: "2-10 Cromer Road, Cromer, NSW 2099",
+    lat: -33.7460, lon: 151.2680,
+    holes: 18, par: 70,
+    courseRating: "71.0（蓝T台，男子；第三方数据库）", slopeRating: "122（蓝T台，男子；第三方数据库）",
+    greenFeeWeekday: "私人球会 - 仅限会员及嘉宾，访客政策未公开", greenFeeWeekend: "私人球会 - 仅限会员及嘉宾",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "会员制/会员嘉宾 - 请直接联系球会",
+    phone: "(02) 9982 3088", website: "https://cromergolfclub.com.au",
+    tags: ["北部海滩区", "毗邻Narrabeen潟湖", "Pencross Bent果岭", "私密"],
+    sourceUrl: "https://cromergolfclub.com.au/"
+  },
+  {
+    name: "Royal Sydney Golf Club", type: "private", suburb: "Rose Bay",
+    address: "Kent Road, Rose Bay, NSW 2029",
+    lat: -33.8730, lon: 151.2660,
+    holes: "36（18洞锦标赛球场 + 9洞Centenary球场）", par: 72,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "135（锦标赛球场，第三方数据库，官方未确认）",
+    greenFeeWeekday: "仅限会员及嘉宾 - 未公开价格", greenFeeWeekend: "仅限会员及嘉宾 - 未公开价格",
+    cartHire: "N/A - 仅限会员及嘉宾",
+    bookingMethod: "仅限会员",
+    phone: "N/A - 未确认", website: "https://www.royalsydney.com.au",
+    tags: ["私人球会", "锦标赛级别布局", "海港景观", "澳洲最古老球会之一"],
+    sourceUrl: "https://www.golfpass.com/travel-advisor/courses/19280-royal-sydney-golf-club-championship-course",
+    guideUrl: "https://www.provisualizer.com/courses/royalsydneychampionship.php"
+  },
+  {
+    name: "The Australian Golf Club", type: "private", suburb: "Rosebery",
+    address: "Bannerman Crescent, Rosebery, NSW 2018（具体门牌未独立核实）",
+    lat: -33.9160, lon: 151.1980,
+    holes: 18, par: 72,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "仅限会员及嘉宾 - 未公开价格", greenFeeWeekend: "仅限会员及嘉宾 - 未公开价格",
+    cartHire: "N/A - 仅限会员及嘉宾",
+    bookingMethod: "仅限会员",
+    phone: "N/A - 未确认", website: "https://www.theaustraliangolfclub.com.au",
+    tags: ["私人球会", "Jack Nicklaus重新设计（1977）", "锦标赛级别", "1905年建立"],
+    sourceUrl: "https://www.golfpass.com/travel-advisor/courses/19291-the-australian-golf-club",
+    guideUrl: "https://course.bluegolf.com/bluegolf/course/course/australiangc/detailedscorecard.htm"
+  },
+  {
+    name: "The Lakes Golf Club", type: "private", suburb: "Eastlakes",
+    address: "Cnr King Street & Vernon Avenue, Eastlakes, NSW 2018",
+    lat: -33.9280, lon: 151.2010,
+    holes: 18, par: 72,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "143-146（依T台不同，第三方数据库，官方未确认）",
+    greenFeeWeekday: "仅限会员及受邀嘉宾；海外/州际访客可联系球会（通常仅周一、周四）", greenFeeWeekend: "仅限会员及嘉宾 - 未公开价格",
+    cartHire: "N/A - 仅限会员及嘉宾",
+    bookingMethod: "仅限会员；海外/州际访客需提前与球会协商",
+    phone: "N/A - 未确认", website: "https://www.thelakesgolfclub.com.au",
+    tags: ["私人球会", "声望极高", "1928年建立", "沙带风格"],
+    sourceUrl: "https://www.golfnsw.org.au/golf-clubs/the-lakes-golf-club/"
+  },
+  {
+    name: "New South Wales Golf Club", type: "private", suburb: "La Perouse",
+    address: "1528 Anzac Parade, La Perouse, NSW 2036",
+    lat: -33.9880, lon: 151.2320,
+    holes: 18, par: 72,
+    courseRating: "73.7（锦标赛/蓝T台，第三方数据库）", slopeRating: "139（第三方数据库）",
+    greenFeeWeekday: "仅限会员及嘉宾；工作日有限访客名额需协商 - 未公开价格", greenFeeWeekend: "仅限会员及嘉宾 - 不对公众开放",
+    cartHire: "N/A - 仅限会员及嘉宾",
+    bookingMethod: "仅限会员；工作日有限访客名额需提前协商",
+    phone: "N/A - 未确认", website: "https://www.nswgolfclub.com.au",
+    tags: ["林克斯风格", "Alister MacKenzie设计（1926）", "世界50强", "海岬/海岸"],
+    sourceUrl: "https://en.wikipedia.org/wiki/New_South_Wales_Golf_Club"
+  },
+  {
+    name: "Concord Golf Club", type: "private", suburb: "Concord",
+    address: "190 Majors Bay Road, Concord, NSW 2137",
+    lat: -33.8580, lon: 151.1020,
+    holes: 18, par: "N/A - 官方未确认（第三方来源不一致）",
+    courseRating: "73.6（第三方数据库，官方未确认）", slopeRating: "131（第三方数据库，官方未确认）",
+    greenFeeWeekday: "纯会员制球会 - 未公开价格", greenFeeWeekend: "纯会员制球会 - 未公开价格",
+    cartHire: "N/A - 仅限会员",
+    bookingMethod: "仅限会员",
+    phone: "(02) 9743 6111", website: "https://www.concordgolfclub.com.au",
+    tags: ["私人球会", "1899年建立", "澳洲50强球场", "内西区"],
+    sourceUrl: "https://www.golfnsw.org.au/golf-clubs/concord-golf-club/",
+    guideUrl: "https://course.bluegolf.com/bluegolf/course/course/concordgcau/detailedscorecard.htm"
+  },
+  {
+    name: "Elanora Country Club", type: "private", suburb: "Elanora Heights",
+    address: "154 Elanora Road, Elanora Heights, NSW 2101",
+    lat: -33.6980, lon: 151.2810,
+    holes: 18, par: 72,
+    courseRating: "73.6（第三方数据库，官方未确认）", slopeRating: "133（第三方数据库，官方未确认）",
+    greenFeeWeekday: "私人球会 - 仅限会员及嘉宾；州际/海外访客可申请 - 未公开价格", greenFeeWeekend: "仅限会员及嘉宾 - 不对公众开放",
+    cartHire: "N/A - 仅限会员及嘉宾",
+    bookingMethod: "仅限会员；州际/海外访客需向球会申请",
+    phone: "N/A - 未确认", website: "https://www.elanoracc.com.au",
+    tags: ["私人球会", "1928年建立", "北部海滩区", "James Wilcher重新设计"],
+    sourceUrl: "https://www.golfpass.com/travel-advisor/courses/19192-elanora-country-club"
+  },
+  {
+    name: "Lane Cove Golf Course", type: "public", suburb: "Lane Cove",
+    address: "180 River Road, Lane Cove, NSW 2066",
+    lat: -33.8220, lon: 151.1520,
+    holes: 9, par: 60,
+    courseRating: "N/A - 未公开", slopeRating: "N/A - 未公开",
+    greenFeeWeekday: "AUD $25（9洞）/ $30（18洞，即打两轮9洞）", greenFeeWeekend: "AUD $25（9洞）/ $30（18洞）— 官网未区分平日/周末价格，以此为准，建议致电确认",
+    cartHire: "N/A - 官网未列，请联系球具室确认",
+    bookingMethod: "在线 lanecove.quick18.com，扫码，电话或邮件 Pro Shop",
+    phone: "(02) 8360 6666", website: "https://www.lanecovegolfcourse.com.au",
+    tags: ["公共球场", "对公众开放", "距CBD约8公里", "River Road河畔"],
+    sourceUrl: "https://www.lanecovegolfcourse.com.au/golf-course/green-fees/",
+    note: "经纬度为River Road/Lane Cove区域估算值，非精确测绘；球场目前处于改造阶段，建议预定前致电确认当前布局与价格。"
+  },
+  {
+    name: "Newgreens Chatswood (原 Chatswood Golf Club)", type: "public", suburb: "Chatswood",
+    address: "130 Beaconsfield Road, Chatswood, NSW 2067",
+    lat: -33.7970, lon: 151.1830,
+    holes: 12, par: 44,
+    courseRating: "TBC - 官网标注暂未公布", slopeRating: "N/A - 未公开",
+    greenFeeWeekday: "N/A - 官网未公开具体价格，需在线预定系统查看当前费率", greenFeeWeekend: "N/A - 同上",
+    cartHire: "N/A - 官网未列",
+    bookingMethod: "在线预定 newgreenschatswood.com.au/golf，或电话",
+    phone: "(02) 9419 2336", website: "https://newgreenschatswood.com.au",
+    tags: ["澳洲首个专门设计的12洞球场", "对公众开放", "约3小时打完", "2026年6月全面开放"],
+    sourceUrl: "https://newgreenschatswood.com.au/golf/the-course/",
+    note: "2026年新开业球场（原1935年建立的Chatswood Golf Club重新开发而成），部分信息（尤其价格）官网未公开，建议以在线预定系统实时价格为准。"
+  },
+  {
+    name: "Randwick Golf Club", type: "public", suburb: "Malabar",
+    address: "Corner Howe Street and Prince Edward Street, Malabar NSW 2036",
+    lat: -33.9581, lon: 151.2465,
+    holes: 18, par: 59,
+    courseRating: "60.1（蓝T台，男子，第三方数据库，官方未确认）", slopeRating: "93（蓝T台，男子，第三方数据库，官方未确认）",
+    greenFeeWeekday: "AUD $28（18洞，周一至五）", greenFeeWeekend: "AUD $35（18洞，周末3点前）/ $28（3点后暮色场）",
+    cartHire: "N/A - 未公开（建议致电确认）",
+    bookingMethod: "电话预定 (02) 8347 3733（球具部）或查看官网",
+    phone: "(02) 8347 3777", website: "https://www.randwickgolfclub.com.au/",
+    tags: ["公共球场", "短打型球场", "13个三杆洞", "海景景观"],
+    sourceUrl: "https://randwickgolfclub.golfer.com.au/green-fees/0/23688"
+  },
+  {
+    name: "Woollahra Golf Club", type: "public", suburb: "Rose Bay",
+    address: "50 O'Sullivan Road, Rose Bay, NSW 2029",
+    lat: -33.8735, lon: 151.2685,
+    holes: 9, par: 68,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $47（18洞）/ $35（9洞）/ $22 暮色场（最后90分钟）", greenFeeWeekend: "AUD $51（18洞）/ $37（9洞）",
+    cartHire: "电动球车 $40（18洞）/ $25（9洞）；手拉车 $5",
+    bookingMethod: "需先在线注册为公共球员，再通过官网系统预定",
+    phone: "(02) 9327 5404", website: "https://www.woollahragolfclub.com/cms/",
+    tags: ["公共球场", "9洞球场", "东郊景观", "悉尼最佳9洞公共球场之一"],
+    sourceUrl: "https://www.woollahragolfclub.com/cms/golf/golf-booking-and-registration/"
+  },
+  {
+    name: "The Coast Golf Club", type: "public", suburb: "Little Bay",
+    address: "1 Coast Hospital Road, Little Bay, NSW 2036",
+    lat: -33.9779, lon: 151.2422,
+    holes: 18, par: 70,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "135（第三方数据库，官方未确认）",
+    greenFeeWeekday: "AUD $80（周一至四全天）/ $65（下午1-2点）/ $50 暮色场（2点后）", greenFeeWeekend: "AUD $110（周末正午-2点）/ $75（1-2点）/ $55 暮色场（2点后）",
+    cartHire: "电动球车 $60（访客）/ $40（会员）；手拉车 $5（另加$5押金）",
+    bookingMethod: "在线预定（需先注册），或电话 (02) 9311 7422",
+    phone: "(02) 9311 7422", website: "https://www.coastgolf.com.au/cms/",
+    tags: ["公共球场", "悬崖海景", "临海球洞", "国际访客可预订"],
+    sourceUrl: "https://www.coastgolf.com.au/cms/public-bookings/"
+  },
+  {
+    name: "Bardwell Valley Golf Club", type: "public", suburb: "Bexley",
+    address: "2A Hillcrest Avenue, Bardwell Valley NSW 2207",
+    lat: -33.9376, lon: 151.1370,
+    holes: 18, par: "N/A - 公开渠道未能核实",
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "N/A - 官网未公开具体金额（图片格式），建议致电确认", greenFeeWeekend: "N/A - 官网未公开具体金额（图片格式），建议致电确认",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "电话 02 9567 7600 或访客预订页面 (bardwellvalleygolf.com.au)",
+    phone: "02 9567 7600", website: "https://bardwellvalleygolf.com.au/",
+    tags: ["公共球场", "山谷景观", "近CBD", "价格亲民"],
+    sourceUrl: "https://bardwellvalleygolf.com.au/green-fees/"
+  },
+  {
+    name: "Barnwell Park Golf Club", type: "public", suburb: "Five Dock",
+    address: "551 Lyons Road West, Five Dock NSW 2046",
+    lat: -33.8630, lon: 151.1280,
+    holes: 18, par: 61,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "N/A - 官网未公开具体金额，第三方数据估计约AUD $18/18洞", greenFeeWeekend: "N/A - 官网未公开具体金额，建议致电确认",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "官网在线预定 barnwellparkgolfclub.com.au，7天开放",
+    phone: "(02) 9713 1162", website: "https://barnwellparkgolfclub.com.au/",
+    tags: ["公共球场", "短打型球场", "适合新手", "内西区"],
+    sourceUrl: "https://barnwellparkgolfclub.com.au/golf/"
+  },
+  {
+    name: "Bexley Golf Club", type: "semi-private", suburb: "Kingsgrove",
+    address: "203 Stoney Creek Road, Kingsgrove, NSW 2208",
+    lat: -33.9505, lon: 151.1055,
+    holes: 18, par: 64,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $20起（第三方数据库，具体请致电确认）", greenFeeWeekend: "AUD $20起（第三方数据库，具体请致电确认）",
+    cartHire: "N/A - 未公开，建议提前致电预订",
+    bookingMethod: "电话预定或 chronogolf.com 在线预定",
+    phone: "(02) 9150 9062", website: "https://www.bexleygolf.com.au/cms/",
+    tags: ["半私人球会", "短打型球场", "1939年建成", "紧凑树线球道"],
+    sourceUrl: "https://www.golfpass.com/travel-advisor/courses/19132-bexley-golf-club"
+  },
+  {
+    name: "Canterbury Public Golf Course", type: "public", suburb: "Beverly Hills",
+    address: "196 Moorefields Road, Beverly Hills, NSW 2209",
+    lat: -33.9528, lon: 151.0870,
+    holes: 9, par: 34,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $17（18洞，第三方数据库，具体请致电确认）", greenFeeWeekend: "AUD $17（18洞，第三方数据库，具体请致电确认）",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "无需预定，直接到场付费打球，每周7天开放（早6点至天黑）",
+    phone: "(02) 9759 5444", website: "https://canterburygolf.com.au/",
+    tags: ["公共球场", "9洞球场", "无需预约", "本特草果岭"],
+    sourceUrl: "https://canterburygolf.com.au/"
+  },
+  {
+    name: "Carnarvon Golf Club", type: "semi-private", suburb: "Lidcombe",
+    address: "Bconnells Point Road, Lidcombe NSW 2141",
+    lat: -33.8600, lon: 151.0490,
+    holes: 18, par: 72,
+    courseRating: "70.0（白T台，男子，第三方数据库，官方未确认）", slopeRating: "110-127之间（不同来源不一致，第三方数据库，官方未确认）",
+    greenFeeWeekday: "AUD $55（1人18洞）/ $220（4人18洞）/ 暮色场 $25", greenFeeWeekend: "AUD $55（1人18洞）/ $220（4人18洞），与平日价格相同",
+    cartHire: "电动球车（仅平日）：2人1车 $130（含果岭费）/ 4人2车 $260（含果岭费）",
+    bookingMethod: "电话预定 (02) 9649 6255 或球具部 (02) 8197 5316",
+    phone: "(02) 9649 6255", website: "https://carnarvongolf.com.au/",
+    tags: ["半私人球会", "全18洞标准球场", "性价比高", "悉尼50佳平价球场之一"],
+    sourceUrl: "https://carnarvongolf.com.au/green-fees"
+  },
+  {
+    name: "Massey Park Golf Club", type: "public", suburb: "Concord",
+    address: "Ian Parade, Concord, NSW 2137",
+    lat: -33.8570, lon: 151.1030,
+    holes: 18, par: 66,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $26起（第三方数据库估计，官方价格表为图片格式未能提取，建议致电确认）", greenFeeWeekend: "N/A - 官网未公开具体金额，建议致电确认",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "官网 masseypark.com.au 公共高尔夫页面预定，或球具部 02 9743 3737",
+    phone: "02 9743 3737", website: "https://www.masseypark.com.au/",
+    tags: ["公共球场", "市议会运营", "平坦易走", "树线球道"],
+    sourceUrl: "https://www.masseypark.com.au/green-fees-dress-code/"
+  },
+  {
+    name: "Strathfield Golf Club", type: "semi-private", suburb: "Strathfield",
+    address: "52 Weeroona Road, Strathfield NSW 2135",
+    lat: -33.8790, lon: 151.0890,
+    holes: 18, par: 70,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $80（社会球员18洞）/ 学生(10-18岁) $30 / 学生(19-24岁) $50 / 暮色场(3点后) $50", greenFeeWeekend: "AUD $100（需申请）/ 暮色场 $60；周六恕不对外开放",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "建议致电球具部确认空档 (02) 9053 1761，社会球员周六不可预订",
+    phone: "(02) 9053 1761", website: "https://www.strathfieldgolf.com.au/cms/",
+    tags: ["半私人球会", "会员优先", "周六不对外开放", "内西区"],
+    sourceUrl: "https://www.strathfieldgolf.com.au/cms/golf/green-fees/"
+  },
+  {
+    name: "Bankstown Golf Club", type: "semi-private", suburb: "Milperra",
+    address: "70 Ashford Avenue, Milperra, NSW 2214",
+    lat: -33.9310, lon: 150.9975,
+    holes: 18, par: "N/A - 公开渠道未能核实",
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $45（18洞）/ $25（9洞）（第三方数据库，官网未公开确切数字）", greenFeeWeekend: "N/A - 需竞赛时间外预订，具体价格建议致电确认",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "需先在官网注册为公共球员，再查看时间表预定；1928年建成",
+    phone: "(02) 9773 0628", website: "https://www.bankstowngolf.com.au/",
+    tags: ["半私人球会", "1928年建成", "访客需预约", "软钉鞋要求"],
+    sourceUrl: "https://www.bankstowngolf.com.au/cms/golf/public-bookings/"
+  },
+  {
+    name: "Beverley Park Golf Club", type: "semi-private", suburb: "Beverley Park",
+    address: "87 Jubilee Avenue, Beverley Park, NSW 2217",
+    lat: -33.9755, lon: 151.1215,
+    holes: 18, par: 70,
+    courseRating: "67.0-70.0之间（因发球台而异，第三方数据库，官方未确认）", slopeRating: "122（第三方数据库，官方未确认）",
+    greenFeeWeekday: "AUD $30-33（18洞，第三方数据库，具体请致电确认）", greenFeeWeekend: "AUD $30-33（18洞，第三方数据库，具体请致电确认）",
+    cartHire: "电动球车约 $40（第三方数据库）",
+    bookingMethod: "在线预定（ChronoGolf / GolfNow）或电话 (02) 9588 5828",
+    phone: "(02) 9588 5828", website: "N/A - 未确认（可通过Golf NSW / 预订平台查询）",
+    tags: ["半私人球会", "近机场15分钟", "全年开放", "练习设施齐全"],
+    sourceUrl: "https://www.golfpass.com/travel-advisor/courses/19131-beverley-park-golf-club"
+  },
+  {
+    name: "Hurstville Golf Course", type: "public", suburb: "Peakhurst",
+    address: "Lorraine Street, Peakhurst NSW 2210",
+    lat: -33.9535, lon: 151.0640,
+    holes: 18, par: "N/A - 公开渠道未能核实",
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $41.50（18洞，2025-2026费率）/ 暮色场（3点后/冬季4点后）$17", greenFeeWeekend: "AUD $47.00（18洞，2025-2026费率）",
+    cartHire: "电动球车 $43.50（18洞）",
+    bookingMethod: "在线预定 chronogolf.com 或电话 (02) 9534 5024",
+    phone: "(02) 9534 5024", website: "https://hurstvillegolf.com.au/",
+    tags: ["公共球场", "市议会运营", "起伏地形", "全新球具部与会所"],
+    sourceUrl: "https://hurstvillegolf.com.au/price-rise-2025/"
+  },
+  {
+    name: "Kareela Golf Club", type: "public", suburb: "Kareela",
+    address: "1 Bates Drive, Kareela, NSW 2232",
+    lat: -34.0175, lon: 151.0700,
+    holes: 18, par: 65,
+    courseRating: "63（ACT调整评级，第三方数据库，官方未确认）", slopeRating: "121（第三方数据库，官方未确认）",
+    greenFeeWeekday: "AUD $30（18洞成人）/ 长者 $24 / 儿童（18岁以下）$16", greenFeeWeekend: "N/A - 公开渠道未能核实具体周末价格，参考官网",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "在线预定（Public Bookings 门户）或电话",
+    phone: "(02) 9521 6279", website: "https://kareelagolfclub.com.au",
+    tags: ["公共球场", "Sutherland Shire", "短打型球场（Par 65）", "全年开放"],
+    sourceUrl: "https://www.kareelagolf.com.au/golf/"
+  },
+  {
+    name: "The Ridge Golf Course", type: "public", suburb: "Barden Ridge",
+    address: "Recreation Drive off New Illawarra Road, Barden Ridge, NSW 2234",
+    lat: -34.0430, lon: 151.0080,
+    holes: 18, par: 72,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $47（18洞成人）/ $35（9洞）/ 暮色场 $24", greenFeeWeekend: "AUD $50（18洞成人）/ $35.50（9洞）/ 暮色场 $24（费率有效期 2026.7.1–2027.6.30）",
+    cartHire: "电动球车 9洞 $34 / 18洞 $50",
+    bookingMethod: "电话预定 Pro Shop (02) 9541 4960，不接受邮件预定社交球局",
+    phone: "(02) 9541 4960", website: "https://theridgegolf.com.au",
+    tags: ["公共球场", "旧垃圾填埋场改建", "2013年开业", "练习场"],
+    sourceUrl: "https://theridgegolf.com.au/cms/golf/tee-times-prices/"
+  },
+  {
+    name: "Woolooware Golf Club", type: "public", suburb: "Woolooware",
+    address: "1R Harnleigh Avenue, Woolooware, NSW 2230",
+    lat: -34.0450, lon: 151.1330,
+    holes: 18, par: 70,
+    courseRating: "70（男子，第三方数据库，官方未确认）", slopeRating: "128（第三方数据库，官方未确认）",
+    greenFeeWeekday: "AUD $46（18洞）/ $36（9洞）/ 长者 $35 / 暮色场 $24", greenFeeWeekend: "AUD $50（18洞）/ $38（9洞）/ 暮色场 $30（2025年7月1日起生效）",
+    cartHire: "电动球车 $52（公众）/ $42（会员）/ 暮色场 $36；手拉车 $5",
+    bookingMethod: "官网在线预定（Public Bookings）",
+    phone: "(02) 9544 0555", website: "https://wooloowaregolfclub.com.au",
+    tags: ["公共球场", "全年365天开放", "近Cronulla海滩", "新手友好"],
+    sourceUrl: "https://wooloowaregolfclub.com.au/green-fees/"
+  },
+  {
+    name: "Sylvania Par 3 Golf", type: "public", suburb: "Sylvania Waters",
+    address: "223B Belgrave Esplanade, Sylvania Waters, NSW 2224",
+    lat: -34.0180, lon: 151.1060,
+    holes: 9, par: "27（9洞全部Par 3短打型球场）",
+    courseRating: "N/A - 不适用（Par 3短打球场无官方评级）", slopeRating: "N/A - 不适用（Par 3短打球场无官方评级）",
+    greenFeeWeekday: "AUD $12（成人）/ $10（儿童）/ 租球 $3", greenFeeWeekend: "AUD $12（成人）/ $10（儿童），与工作日相同（未见区分周末价格）",
+    cartHire: "N/A - 不适用，步行球场",
+    bookingMethod: "无需预定，大团体除外；营业时间 6AM-8PM",
+    phone: "(02) 9540 1669", website: "https://sylvaniapar3golfandsoccer.com.au",
+    tags: ["Par 3短打球场", "无需预定", "适合家庭/新手", "兼营Soccer Golf"],
+    sourceUrl: "https://sylvaniapar3golfandsoccer.com.au/par-3-golf/"
+  },
+  {
+    name: "Cronulla Golf Club", type: "private", suburb: "Cronulla",
+    address: "Corner Hume & Elouera Roads, Cronulla, NSW 2230",
+    lat: -34.0530, lon: 151.1520,
+    holes: 18, par: 70,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "125–129（因发球台不同，第三方数据库，官方未确认）",
+    greenFeeWeekday: "仅限会员及嘉宾 - 会员陪同 $65（18洞）", greenFeeWeekend: "非会员陪同 $75（18洞）/ 暮色场 $35 / 青少年（12-17岁）$20",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "私人球会，需会员陪同或提前预定；电话或官网Booking Request",
+    phone: "(02) 9523 6777", website: "https://www.cronullagolf.com.au",
+    tags: ["私人球会", "海滨球场", "20+沙坑", "会员制"],
+    sourceUrl: "https://www.cronullagolf.com.au/cms/"
+  },
+  {
+    name: "Georges River Golf Club", type: "public", suburb: "Georges Hall",
+    address: "255 Henry Lawson Drive, Georges Hall, NSW 2198",
+    lat: -33.9130, lon: 150.9850,
+    holes: 18, par: 70,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $32（18洞成人）/ $22（9洞）/ 暮色场（2pm后）$22 / 长者 $26", greenFeeWeekend: "AUD $45（18洞成人）/ 暮色场（2pm后）$32",
+    cartHire: "工作日 $30（9洞）/ $40（18洞）；周末 $45（18洞）",
+    bookingMethod: "在线预定 teeitup.com 系统",
+    phone: "(02) 9724 1615", website: "https://georgesrivergolf.com.au",
+    tags: ["公共球场", "河畔球场", "新手友好", "性价比高"],
+    sourceUrl: "https://georgesrivergolf.com.au/green-fees/"
+  },
+  {
+    name: "Avondale Golf Club", type: "private", suburb: "Pymble",
+    address: "Avondale Golf Club, Pymble, NSW 2073",
+    lat: -33.7370, lon: 151.1330,
+    holes: 18, par: 71,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "134（第三方数据库，官方未确认）",
+    greenFeeWeekday: "仅限会员及嘉宾 - 未公开价格", greenFeeWeekend: "仅限会员及嘉宾 - 未公开价格",
+    cartHire: "N/A - 仅限会员及嘉宾",
+    bookingMethod: "仅限会员本人、对等会员俱乐部会员、企业球日或经总经理引荐的访客",
+    phone: "(02) 9449 6455", website: "https://www.avondalegolfclub.com.au",
+    tags: ["私人球会", "上北岸", "200英亩球场", "毗邻Pymble女子中学"],
+    sourceUrl: "https://avondalegolfcourse.com/membership/"
+  },
+  {
+    name: "Cammeray Golf Club", type: "public", suburb: "Cremorne",
+    address: "Park Avenue, Cremorne, NSW 2090",
+    lat: -33.8270, lon: 151.2140,
+    holes: 9, par: 3,
+    courseRating: "N/A - 不适用（Par 3短打球场无官方评级）", slopeRating: "N/A - 不适用（Par 3短打球场无官方评级）",
+    greenFeeWeekday: "AUD $30（9洞）", greenFeeWeekend: "AUD $40（9洞）",
+    cartHire: "球车数量有限（约6台），具体价格未公开；曾有阶段性停用球车通知",
+    bookingMethod: "在线预定 cammeray.miclub.com.au 或电话，无需会员资格",
+    phone: "(02) 9953 1522", website: "https://cammeraygolf.com.au",
+    tags: ["公共球场", "Par 3短打型", "近悉尼CBD", "1906年建立"],
+    sourceUrl: "https://cammeraygolf.com.au/"
+  },
+  {
+    name: "Castle Cove Country Club", type: "public", suburb: "Castle Cove",
+    address: "68 Deepwater Road, Castle Cove, NSW 2069",
+    lat: -33.7960, lon: 151.2080,
+    holes: 9, par: "N/A - 未公开（9洞球场，14个发球台可打18洞）",
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $30（9洞）/ $45（18洞）/ 学生长者 $23-40 / 暮色场（3pm后）$24", greenFeeWeekend: "AUD $36（9洞）/ $49（18洞）/ 学生长者 $26-43 / 暮色场 $28",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "电话 Pro Shop 或官网预定",
+    phone: "(02) 9417 5444", website: "https://www.castlecovegolf.com.au",
+    tags: ["公共球场", "北岸历史球场", "9洞14发球台", "近Chatswood"],
+    sourceUrl: "https://www.castlecovegolf.com.au/cms/golf/public-golf/"
+  },
+  {
+    name: "Gordon Golf Club", type: "public", suburb: "Gordon",
+    address: "2 Lynn Ridge Avenue, Gordon, NSW 2072",
+    lat: -33.7560, lon: 151.1550,
+    holes: 18, par: 65,
+    courseRating: "70.0（第三方数据库，官方未确认）", slopeRating: "107–113（因发球台不同，第三方数据库，官方未确认）",
+    greenFeeWeekday: "AUD $38（18洞）/ $30（10洞）/ 长者学生 $30（18洞）/ 暮色场 $25", greenFeeWeekend: "AUD $49.50（18洞）/ $33（10洞）",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "电话 Pro Shop (02) 9498 1277 或在线预定门户",
+    phone: "(02) 9498 1277", website: "https://www.gordongolfcourse.com.au",
+    tags: ["公共球场", "上北岸", "短打型球场", "树木环绕"],
+    sourceUrl: "https://www.gordongolfcourse.com.au/cms/golf/"
+  },
+  {
+    name: "Manly Golf Club", type: "private", suburb: "Manly",
+    address: "38 Balgowlah Road, Manly, NSW 2095",
+    lat: -33.7970, lon: 151.2650,
+    holes: 18, par: 71,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "134（第三方数据库，官方未确认）",
+    greenFeeWeekday: "访客费约 $120（仅限周一11:30后及周四，需持有效差点及所属球会会籍）", greenFeeWeekend: "仅限会员及嘉宾 - 不对外开放",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "仅限有限的州际/海外访客，工作日特定时段，需提前联系球会",
+    phone: "(02) 9948 0256", website: "https://www.manlygolf.com.au",
+    tags: ["私人球会", "1903年建立", "近曼利海滩", "悉尼历史球会之一"],
+    sourceUrl: "https://www.manlygolf.com.au/"
+  },
+  {
+    name: "Monash Country Club", type: "private", suburb: "Ingleside",
+    address: "256 Powderworks Road, Ingleside, NSW 2101",
+    lat: -33.6820, lon: 151.2680,
+    holes: 18, par: "N/A - 未公开",
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "约 $140（会员陪同来宾，第三方资料，具体政策请以官方为准）", greenFeeWeekend: "约 $200（会员陪同来宾，第三方资料，具体政策请以官方为准）",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "私人球会，州际会员可通过办公室联系预定球局",
+    phone: "(02) 9913 8282", website: "N/A - 未确认官网",
+    tags: ["私人球会", "北部海滩", "锦标赛级别", "太平洋景观"],
+    sourceUrl: "https://www.golfaustralia.com.au/feature/review-monash-country-club-608534"
+  },
+  {
+    name: "Mona Vale Golf Club", type: "public", suburb: "Mona Vale",
+    address: "3 Golf Avenue, Mona Vale, NSW 2103",
+    lat: -33.6800, lon: 151.3020,
+    holes: 18, par: 72,
+    courseRating: "71（蓝T台，第三方数据库，官方未确认）", slopeRating: "131（蓝T台）；黑135／白130／红127／黄126（因发球台不同，第三方数据库，官方未确认）",
+    greenFeeWeekday: "AUD $42（18洞，周三至周五）", greenFeeWeekend: "AUD $65（18洞，周末及公众假期）",
+    cartHire: "电动球车及手拉车可在Pro Shop租借，具体价格未公开",
+    bookingMethod: "官网/电话预定，公众可在比赛时段以外7天预定",
+    phone: "(02) 9999 4266", website: "https://www.mvgc.com.au",
+    tags: ["公共球场", "海滨球场", "北部海滩", "性价比之选（澳洲50佳50元以下球场）"],
+    sourceUrl: "https://monavalegolfclub.golfer.com.au/green-fees/0/24566"
+  },
+  {
+    name: "Muirfield Golf Club", type: "semi-private", suburb: "North Rocks",
+    address: "Barclay Road, North Rocks, NSW 2151",
+    lat: -33.7770, lon: 151.0290,
+    holes: 18, par: 69,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "访客费 $45 + 比赛费（需持有效差点及所属球会会籍，每年限访6次）", greenFeeWeekend: "同工作日政策，访客每日欢迎但受限次数",
+    cartHire: "会员可租借电动球车，具体价格未公开",
+    bookingMethod: "访客需为Golf Australia认证球会会员并持有效差点，电话或官网联系",
+    phone: "(02) 9871 1388", website: "https://www.muirfieldgolf.com.au",
+    tags: ["Group One球场", "西北丘陵区", "会员+访客混合模式", "练习场齐全"],
+    sourceUrl: "https://www.muirfieldgolf.com.au/cms/golf/public-golf/"
+  },
+  {
+    name: "North Ryde Golf Club", type: "semi-private", suburb: "East Ryde",
+    address: "Twin Road, East Ryde, NSW 2113",
+    lat: -33.8000, lon: 151.1350,
+    holes: 18, par: 69,
+    courseRating: "68.2（第三方数据库，官方未确认）", slopeRating: "129（第三方数据库，官方未确认）",
+    greenFeeWeekday: "AUD $20（弹性会员社交果岭费）；会员制社交果岭费 $10-20 视日期而定", greenFeeWeekend: "AUD $60（弹性会员）；比赛结束后开放公众预定",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "公众预定须在线进行，周五全天及比赛结束后其他时段开放",
+    phone: "(02) 9887 4422", website: "https://www.northrydegolfclub.com.au",
+    tags: ["会员制+公众预定", "6个Par3/9个Par4/3个Par5", "近悉尼北区", "全周开放部分时段"],
+    sourceUrl: "https://www.northrydegolfclub.com.au/golf/play-golf/"
+  },
+  {
+    name: "North Turramurra Golf Course", type: "public", suburb: "North Turramurra",
+    address: "361A Bobbin Head Road, North Turramurra, NSW 2074",
+    lat: -33.7108, lon: 151.1466,
+    holes: 18, par: 68,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "114（第三方数据库GolfPass，官方未确认）",
+    greenFeeWeekday: "N/A - 未公开（历史数据约AUD $32，请以Pro Shop电话报价为准）", greenFeeWeekend: "N/A - 未公开（历史数据约AUD $40，请以Pro Shop电话报价为准）",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "电话预定 Pro Shop (02) 9144 5110，或通过 Ku-ring-gai 市议会官网",
+    phone: "(02) 9144 5110", website: "https://northturramurragc.ygponline.net/",
+    tags: ["市议会公共球场", "国家公园景观", "2017年重新设计", "预订需求高"],
+    sourceUrl: "https://www.krg.nsw.gov.au/Things-to-do/Sport-and-fitness/Golf/North-Turramurra-Golf-Course"
+  },
+  {
+    name: "Northbridge Golf Club", type: "public", suburb: "Northbridge",
+    address: "296C Sailors Bay Road, Northbridge, NSW 2063",
+    lat: -33.8145, lon: 151.2222,
+    holes: 18, par: 64,
+    courseRating: "63（第三方数据库，官方未确认）", slopeRating: "115（第三方数据库，官方未确认）",
+    greenFeeWeekday: "约AUD $49（18洞）/ 约$35（9洞）— 具体价格请见官网", greenFeeWeekend: "约AUD $64（18洞）/ 约$39（9洞）— 具体价格请见官网",
+    cartHire: "N/A - 未公开具体价格，电动球车/手拉车可租（需预订，21岁以上持驾照）",
+    bookingMethod: "在线预定或电话 (02) 9958 6900 / Pro Shop (02) 9958 7517",
+    phone: "(02) 9958 6900", website: "https://northbridgegolfclub.com.au/",
+    tags: ["公共球场", "短距离球场", "北岸社区球场", "适合新手"],
+    sourceUrl: "https://northbridgegolfclub.com.au/"
+  },
+  {
+    name: "Pymble Golf Club", type: "private", suburb: "Pymble",
+    address: "Cowan Road, St Ives, NSW 2075",
+    lat: -33.7280, lon: 151.1590,
+    holes: 18, par: 72,
+    courseRating: "73.6（第三方数据库，官方未确认）", slopeRating: "124（第三方数据库，官方未确认）",
+    greenFeeWeekday: "仅限会员及嘉宾 - 未公开价格（海外/外州访客可联系球会咨询平日非比赛时段）", greenFeeWeekend: "仅限会员及嘉宾 - 未公开价格",
+    cartHire: "N/A - 仅限会员及嘉宾",
+    bookingMethod: "仅限会员及受邀访客，需联系球会",
+    phone: "(02) 9144 2884", website: "https://www.pymblegolf.com.au/cms/",
+    tags: ["私人球会", "悉尼北岸精英球场", "1926年建立", "锦标赛级别布局"],
+    sourceUrl: "https://www.pymblegolf.com.au/cms/"
+  },
+  {
+    name: "Roseville Golf Club", type: "private", suburb: "Roseville",
+    address: "4 Links Avenue, Roseville, NSW 2069",
+    lat: -33.7789, lon: 151.1815,
+    holes: 18, par: "66（男子）/ 67（女子）",
+    courseRating: "67（蓝T台）/ 70（红T台，第三方数据库，官方未确认）", slopeRating: "118（蓝T台）/ 127（红T台，第三方数据库，官方未确认）",
+    greenFeeWeekday: "仅限会员及嘉宾 - 未公开价格", greenFeeWeekend: "仅限会员及嘉宾 - 未公开价格",
+    cartHire: "N/A - 仅限会员及嘉宾",
+    bookingMethod: "仅限会员",
+    phone: "(02) 8467 1800", website: "https://www.rosevillegolf.com.au/cms/",
+    tags: ["私人球会", "1923年建立", "砂岩地貌", "以三杆洞著称"],
+    sourceUrl: "https://www.golfnsw.org.au/golf-clubs/roseville-golf-club/"
+  },
+  {
+    name: "Ryde-Parramatta Golf Club", type: "private", suburb: "West Ryde",
+    address: "1156 Victoria Road, West Ryde, NSW 2114",
+    lat: -33.8080, lon: 151.0850,
+    holes: 18, par: "71（球会）/ 72（澳洲评级）",
+    courseRating: "72（第三方数据库，官方未确认）", slopeRating: "136（第三方数据库，官方未确认）",
+    greenFeeWeekday: "仅限会员及嘉宾 - 未公开价格", greenFeeWeekend: "仅限会员及嘉宾 - 未公开价格",
+    cartHire: "提供现代电动球车（具体价格未公开）",
+    bookingMethod: "仅限会员，会员系统 miclub.com.au；访客需联系球会",
+    phone: "(02) 9874 1204", website: "https://www.rydeparramatta.com.au/",
+    tags: ["私人球会", "本土植物景观设计", "锦标赛球场", "毗邻CBD"],
+    sourceUrl: "https://www.rydeparramatta.com.au/the-course"
+  },
+  {
+    name: "Terrey Hills Golf & Country Club", type: "private", suburb: "Terrey Hills",
+    address: "116 Booralie Road, Terrey Hills, NSW 2084",
+    lat: -33.6890, lon: 151.2270,
+    holes: 18, par: 72,
+    courseRating: "70.7（第三方数据库，官方未确认）", slopeRating: "121～136（不同资料来源差异较大，第三方数据库，官方未确认）",
+    greenFeeWeekday: "仅限会员及嘉宾 - 未公开价格（访客受限，需联系球会）", greenFeeWeekend: "仅限会员及嘉宾 - 未公开价格",
+    cartHire: "N/A - 仅限会员及嘉宾",
+    bookingMethod: "仅限会员及受邀访客，会籍部电话 (02) 9486 4119",
+    phone: "(02) 9486 4119", website: "https://www.terreyhillsgolf.com.au/cms/",
+    tags: ["私人球会", "1994年开业", "库林盖蔡斯国家公园环绕", "悉尼较新锦标赛球场"],
+    sourceUrl: "https://www.terreyhillsgolf.com.au/cms/"
+  },
+  {
+    name: "Balgowlah Golf Club", type: "semi-private", suburb: "Balgowlah",
+    address: "506 Sydney Road, Balgowlah, NSW 2093",
+    lat: -33.7930, lon: 151.2610,
+    holes: 9, par: 66,
+    courseRating: "70.0（男子，第三方数据库，官方未确认）", slopeRating: "120（第三方数据库，官方未确认）",
+    greenFeeWeekday: "约AUD $15～$25（9洞，含多种促销价，如Happy Hour $17.50）", greenFeeWeekend: "约AUD $20～$31.50（9洞）",
+    cartHire: "N/A - 未公开具体价格",
+    bookingMethod: "在线预定或电话 Pro Shop (02) 9949 2057",
+    phone: "(02) 9948 1900", website: "https://www.balgowlahgolfclub.com.au/cms/",
+    tags: ["9洞球场", "北部海滩最快最友好球场", "社交球局", "咖啡厅Gusto on the Green"],
+    sourceUrl: "https://www.balgowlahgolfclub.com.au/cms/"
+  },
+  {
+    name: "Bayview Golf Club", type: "semi-private", suburb: "Mona Vale",
+    address: "1825 Pittwater Road, Mona Vale, NSW 2103",
+    lat: -33.6767, lon: 151.2990,
+    holes: 18, par: 71,
+    courseRating: "73.0（第三方数据库，官方未确认）", slopeRating: "133（第三方数据库，官方未确认）",
+    greenFeeWeekday: "AUD $81（18洞）/ $65（11洞）/ $53 暮色场（2025年10月起价格）", greenFeeWeekend: "AUD $91（18洞）/ $70（11洞）/ $58 暮色场",
+    cartHire: "电动球车 $57（非会员）/ $44（会员），18洞",
+    bookingMethod: "官网Public Bookings在线预定，或电话 (02) 9999 3786",
+    phone: "(02) 9999 3786", website: "https://bayviewgolfclub.com.au/cms/",
+    tags: ["1928年建立", "海景球场", "访客每日欢迎", "俱乐部会所设施齐全"],
+    sourceUrl: "https://bayviewgolfclub.com.au/cms/lets-play-golf/green-fees-competition-social-play/"
+  },
+  {
+    name: "Wakehurst Golf Club", type: "semi-private", suburb: "Seaforth (Clontarf/Allambie Heights)",
+    address: "Upper Clontarf Street, Seaforth, NSW 2092",
+    lat: -33.7930, lon: 151.2470,
+    holes: 18, par: 72,
+    courseRating: "73.3（第三方数据库，官方未确认）", slopeRating: "136（第三方数据库，官方未确认）",
+    greenFeeWeekday: "AUD $60（18洞）/ 优惠票（养老金/优惠证）$39", greenFeeWeekend: "AUD $65（18洞，周六日及公共假期）",
+    cartHire: "电动球车 $49（18洞）/ $30（9洞）；手拉车 $5；球杆租赁 $25（18洞）/ $20（9洞）",
+    bookingMethod: "MiClub在线预定系统 wakehurst.miclub.com.au，或电话",
+    phone: "(02) 9949 3188", website: "https://www.wakehurstgolf.com.au/cms/",
+    tags: ["访客每日欢迎", "北部海滩球场", "锦标赛级别难度", "全年开放"],
+    sourceUrl: "https://www.wakehurstgolf.com.au/cms/contact-us/"
+  },
+  {
+    name: "Palm Beach Golf Club", type: "public", suburb: "Palm Beach",
+    address: "2 Beach Road, Palm Beach, NSW 2108",
+    lat: -33.5990, lon: 151.3230,
+    holes: 9, par: 64,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $47（18洞/两轮9洞）/ $39（9洞）；学生/优惠票更低", greenFeeWeekend: "AUD $52（18洞）/ $42（9洞）；周末及公共假期",
+    cartHire: "电动球车 $45（18洞）/ $35（9洞）；手拉车 $7；球杆租赁 $27（可加手拉车 $34）",
+    bookingMethod: "在线预定或电话 Pro Shop (02) 9974 4079（选项1）",
+    phone: "(02) 9974 4079", website: "https://www.palmbeachgolf.com.au/",
+    tags: ["公共球场", "毗邻Pittwater与Barrenjoey灯塔", "9洞海滨球场", "悉尼北端"],
+    sourceUrl: "https://www.palmbeachgolf.com.au/green-fees"
+  },
+  {
+    name: "Avalon Golf Course", type: "public", suburb: "Avalon Beach",
+    address: "32 Old Barrenjoey Road, Avalon Beach, NSW 2107",
+    lat: -33.6350, lon: 151.3300,
+    holes: 9, par: 31,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $32（18洞/两轮9洞）/ $25（9洞）/ $16 暮色场（无平日周末差异价）", greenFeeWeekend: "AUD $32（18洞）/ $25（9洞）/ $16 暮色场（无平日周末差异价）",
+    cartHire: "球杆租赁 $20；手拉车租赁 $7（无机动球车）",
+    bookingMethod: "电话或邮件 manager@avalongolfcourse.com.au 预定",
+    phone: "(02) 9918 2606", website: "https://avalongolfcourse.com.au/",
+    tags: ["公共球场", "1926年建立", "北部半岛唯一从早到晚开放球场", "9洞短打球场"],
+    sourceUrl: "https://avalongolfcourse.com.au/fees/"
+  },
+  {
+    name: "Parramatta Golf Club", type: "public", suburb: "Parramatta",
+    address: "Park Parade, Parramatta NSW 2150",
+    lat: -33.8090, lon: 151.0080,
+    holes: 9, par: 62,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "N/A - 未公开（第三方数据显示约AUD $15/18洞，官方未确认）", greenFeeWeekend: "N/A - 未公开",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "电话预定",
+    phone: "(02) 9635 6781", website: "N/A - 未确认官方网站",
+    tags: ["公共球场", "9洞", "百年老球场（1902年建立）", "市中心邻近"],
+    sourceUrl: "https://www.golfpass.com/travel-advisor/courses/19252-parramatta-golf-club"
+  },
+  {
+    name: "Woodville Golf Club", type: "public", suburb: "Guildford（近Parramatta）",
+    address: "118 Rawson Road, Guildford NSW 2161",
+    lat: -33.8570, lon: 150.9970,
+    holes: 18, par: 72,
+    courseRating: "71（第三方数据库，官方未确认）", slopeRating: "113-118（第三方数据库，蓝/白T台，官方未确认）",
+    greenFeeWeekday: "N/A - 未公开（第三方数据显示约AUD $13起，官方未确认）", greenFeeWeekend: "N/A - 未公开",
+    cartHire: "提供球车/手拉车租赁，具体价格N/A - 未公开",
+    bookingMethod: "电话预定 Pro Shop",
+    phone: "(02) 9632 3582", website: "N/A - 未确认官方网站（由Cumberland City Council管理）",
+    tags: ["市议会公共球场", "性价比高", "18洞", "Cumberland City Council运营"],
+    sourceUrl: "https://www.cumberland.nsw.gov.au/woodville-public-golf-course"
+  },
+  {
+    name: "Oatlands Golf Club", type: "private", suburb: "Oatlands",
+    address: "94 Bettington Road, Oatlands NSW 2117",
+    lat: -33.7960, lon: 151.0270,
+    holes: 18, par: 70,
+    courseRating: "71.0（黑T台，第三方数据库，官方未确认）", slopeRating: "124（黑T台，第三方数据库，官方未确认）",
+    greenFeeWeekday: "仅限会员及持有效外部球会会籍的访客 - 未公开具体价格", greenFeeWeekend: "仅限会员及持有效外部球会会籍的访客 - 未公开具体价格",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "访客需持其他球会有效会员证，通过Pro Shop (02 9630 1423) 或邮件联系总经理预定",
+    phone: "(02) 9630 4444", website: "https://www.oatlandsgolf.com.au",
+    tags: ["私人球会", "公园式布局", "开放会籍无入会费", "访客受限"],
+    sourceUrl: "https://www.oatlandsgolf.com.au/cms/"
+  },
+  {
+    name: "Rosnay Golf Club（Auburn Golf Course）", type: "public", suburb: "Auburn",
+    address: "5 Weymouth Avenue, Auburn NSW 2144",
+    lat: -33.8490, lon: 151.0330,
+    holes: 18, par: 68,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $19（9洞）/ $26（18洞，周一至五）", greenFeeWeekend: "AUD $21（9洞）/ $31（18洞，周末）；暮色场18洞 $14（2:30pm后）",
+    cartHire: "手拉车 $3；电动球车 $36；球杆租赁 $10（注：截至2026年5月，因场地状况球车暂停使用，以官方最新公告为准）",
+    bookingMethod: "电话预定，建议提前预约",
+    phone: "(02) 9649 8429", website: "https://rosnaygolfclub.com.au",
+    tags: ["市议会公共球场", "Cumberland City Council运营", "鸭河畔（Duck River）", "又名Auburn Golf Course"],
+    sourceUrl: "https://www.cumberland.nsw.gov.au/auburn-golf-course-rosnay"
+  },
+  {
+    name: "Cumberland Country Golf Club", type: "semi-private", suburb: "Greystanes",
+    address: "248 Old Prospect Road, Greystanes NSW 2145",
+    lat: -33.8130, lon: 150.9440,
+    holes: 18, par: 71,
+    courseRating: "70.0（会员T台，第三方数据库，官方未确认）", slopeRating: "110（第三方数据库，官方未确认）",
+    greenFeeWeekday: "访客 AUD $55（18洞）/ $45（9洞），会员嘉宾 $45（18洞）/ $40（9洞）", greenFeeWeekend: "同上，需视比赛安排（周四、周五全天及周三/六/日3:30pm后开放社会球局）",
+    cartHire: "公共球车 $50（18洞）/ $35（9洞）；会员球车 $32（18洞）/ $20（9洞）",
+    bookingMethod: "电话或邮件 golfbookings@cumberlandgolf.com.au 预定",
+    phone: "(02) 9631 3878", website: "https://www.cumberlandgolf.com.au",
+    tags: ["锦标赛级别球场", "1938年建立", "Parramatta地区知名球会", "会员嘉宾及社会球局开放"],
+    sourceUrl: "https://www.cumberlandgolf.com.au/gfgreenfees/"
+  },
+  {
+    name: "Ashlar Golf Club", type: "public", suburb: "Blacktown",
+    address: "Springfield Avenue, Blacktown NSW 2148",
+    lat: -33.7720, lon: 150.9060,
+    holes: 18, par: 71,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "N/A - 未公开（第三方数据显示约AUD $26-34/18洞，官方未确认）", greenFeeWeekend: "N/A - 未公开",
+    cartHire: "提供球车租赁，需提前致电确认，具体价格N/A - 未公开",
+    bookingMethod: "电话预定",
+    phone: "(02) 9622 4300", website: "N/A - 未确认官方网站",
+    tags: ["公共球场", "18洞", "会所设餐厅酒吧", "全年开放"],
+    sourceUrl: "https://www.golfpass.com/travel-advisor/courses/19122-ashlar-golf-club"
+  },
+  {
+    name: "Sefton Golf Course", type: "public", suburb: "Sefton（Yagoona）",
+    address: "160 Rose Street, Sefton NSW 2162",
+    lat: -33.8960, lon: 151.0170,
+    holes: 18, par: 54,
+    courseRating: "52（第三方数据库，官方未确认）", slopeRating: "78（第三方数据库，官方未确认）",
+    greenFeeWeekday: "AUD $19-24.50（9洞）/ $25.50-30（18洞）", greenFeeWeekend: "AUD $19-24.50（9洞）/ $25.50-30（18洞，具体以官方为准）",
+    cartHire: "N/A - 未公开（Par 3球场通常无需球车）",
+    bookingMethod: "电话预定 Pro Shop",
+    phone: "(02) 9743 9436", website: "N/A - 未确认官方网站（由Canterbury Bankstown Council运营）",
+    tags: ["市议会公共球场", "全par 3短球场", "新手友好", "适合练习短杆"],
+    sourceUrl: "https://www.cbcity.nsw.gov.au/recreation/parks-and-reserve/sefton-golf-club"
+  },
+  {
+    name: "Fairfield Golf Course", type: "public", suburb: "Prairiewood",
+    address: "Corner of Smithfield Road & Beavors Street, Prairiewood NSW 2176",
+    lat: -33.8680, lon: 150.9330,
+    holes: 18, par: 69,
+    courseRating: "65.0（第三方数据库，官方未确认）", slopeRating: "108（第三方数据库，官方未确认）",
+    greenFeeWeekday: "N/A - 未公开（第三方数据显示约AUD $20-25/18洞，官方未确认）", greenFeeWeekend: "N/A - 未公开",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "电话 (02) 9604 4007 或邮件 play@fairfieldgolf.com.au 预定",
+    phone: "(02) 9604 4007", website: "N/A - 未确认官方网站",
+    tags: ["公共球场", "附设练习场", "18洞", "悉尼低价球场之一"],
+    sourceUrl: "https://www.golfnsw.org.au/golf-clubs/fairfield-golf-course/"
+  },
+  {
+    name: "Dunheved Golf Club", type: "semi-private", suburb: "St Marys",
+    address: "176 Links Road, St Marys NSW 2760",
+    lat: -33.7660, lon: 150.7900,
+    holes: 18, par: 72,
+    courseRating: "72.1（第三方数据库，官方未确认，不同T台数据存在差异需以官方为准）", slopeRating: "134（第三方数据库，官方未确认）",
+    greenFeeWeekday: "AUD $18（周一至四）/ $22（周五1pm前）/ $18（周五1pm后）", greenFeeWeekend: "AUD $35",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "电话预定，或通过GolfNow在线预定平台",
+    phone: "(02) 9623 0239", website: "http://www.dunhevedgolfclub.com.au",
+    tags: ["社会球局及会员制", "18洞", "全年开放", "练习设施齐全"],
+    sourceUrl: "http://www.dunhevedgolfclub.com.au/"
+  },
+  {
+    name: "Orchard Hills Golf Club（Colonial Golf & FootGolf Course）", type: "public", suburb: "Werrington",
+    address: "Lot 1 Werrington Road, Werrington NSW 2747",
+    lat: -33.7690, lon: 150.7480,
+    holes: 9, par: 58,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "N/A - 未公开", greenFeeWeekend: "N/A - 未公开",
+    cartHire: "提供手拉车及电动球车租赁（数量有限），具体价格N/A - 未公开",
+    bookingMethod: "电话预定，务必提前预约",
+    phone: "(02) 9673 3639", website: "N/A - 未确认官方网站",
+    tags: ["9洞短球场", "适合练短杆", "同场设FootGolf足球高尔夫", "休闲社交球局"],
+    sourceUrl: "https://www.golfnsw.org.au/golf-clubs/orchard-hills-golf-club/"
+  },
+  {
+    name: "Leonay Golf Club", type: "public", suburb: "Emu Plains",
+    address: "1 Leonay Parade, Leonay NSW 2750",
+    lat: -33.7440, lon: 150.6470,
+    holes: 18, par: 66,
+    courseRating: "66.0（第三方数据库，官方未确认）", slopeRating: "113（第三方数据库，官方未确认）",
+    greenFeeWeekday: "N/A - 未公开", greenFeeWeekend: "N/A - 未公开",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "电话预定",
+    phone: "(02) 4735 5300", website: "https://leonaygolfclub.com.au",
+    tags: ["公共球场", "蓝山山脚", "树线球道景观优美", "全年开放"],
+    sourceUrl: "https://leonaygolfclub.com.au/"
+  },
+  {
+    name: "Penrith Golf & Recreation Club", type: "public", suburb: "Orchard Hills（近Penrith）",
+    address: "1939 The Northern Road, Orchard Hills NSW 2748",
+    lat: -33.7860, lon: 150.7280,
+    holes: 18, par: 72,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $35（18洞）/ $25（长者）/ 暮色场 $20（3pm/4pm后，视夏令时）", greenFeeWeekend: "AUD $35（18洞，与平日同价，以官方最新价目表为准）",
+    cartHire: "电动球车 $45（18洞）/ $20（9洞）；手拉车 $5",
+    bookingMethod: "电话 (02) 4736 1613 预定，或官网",
+    phone: "(02) 4736 1633", website: "https://penrithgolfclub.com.au",
+    tags: ["锦标赛级别球场", "曾举办澳洲公开赛/资深赛", "蓝山景观", "对外开放"],
+    sourceUrl: "https://www.penrithgolf.org/green-fees/"
+  },
+  {
+    name: "Stonecutters Ridge Golf Club", type: "semi-private", suburb: "Colebee",
+    address: "86 Stonecutters Drive, Colebee NSW 2761",
+    lat: -33.7080, lon: 150.8570,
+    holes: 18, par: 71,
+    courseRating: "73.1（第三方数据库，官方未确认）", slopeRating: "134（第三方数据库，官方未确认）",
+    greenFeeWeekday: "N/A - 未公开（第三方数据显示约AUD $50，官方未确认）", greenFeeWeekend: "N/A - 未公开（第三方数据显示约AUD $55，官方未确认）",
+    cartHire: "配备GPS电动球车（社交球局时段可租，具体价格N/A - 未公开）",
+    bookingMethod: "电话 (02) 9627 7081 或邮件 admin@srgc.net.au 预定；社会球局时段为周一/三/五全天，其他时段视会员赛事安排",
+    phone: "(02) 9627 7081", website: "https://www.stonecuttersgc.com.au",
+    tags: ["Greg Norman设计", "锦标赛级别球场", "悉尼百大球场", "会员制附社会球局"],
+    sourceUrl: "https://www.stonecuttersgc.com.au/cms/golf/"
+  },
+  {
+    name: "Cabramatta Golf Club", type: "public", suburb: "Cabramatta",
+    address: "Corner Cabramatta Road & Cumberland Highway, Cabramatta NSW 2166",
+    lat: -33.8930, lon: 150.9350,
+    holes: 18, par: 70,
+    courseRating: "71.8（第三方数据库 BlueGolf，官方未确认）", slopeRating: "127（第三方数据库 BlueGolf，官方未确认）",
+    greenFeeWeekday: "AUD $45（18洞，2:30pm前）/ $30 暮色场（2:30pm后）/ 学生 $24", greenFeeWeekend: "AUD $50（18洞，周六至周日）",
+    cartHire: "电动球车 $50；手拉车 $6；球杆连手拉车租赁 $25",
+    bookingMethod: "电话预定 (02) 9602 1516，建议提前致电确认",
+    phone: "(02) 9602 1516", website: "https://www.cabragolf.com.au",
+    tags: ["公共球场", "西南悉尼", "大量沙坑", "平价亲民"],
+    sourceUrl: "https://www.cabragolf.com.au/social-golf/"
+  },
+  {
+    name: "Oak Point Golf Club（原 Liverpool Golf Club）", type: "semi-private", suburb: "Lansvale",
+    address: "Hollywood Drive, Lansvale NSW 2166",
+    lat: -33.9130, lon: 150.9530,
+    holes: 18, par: 72,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $60（18洞）/ 2人+球车套餐 $120", greenFeeWeekend: "仅限会员（周末不对外开放）",
+    cartHire: "N/A - 未公开具体价格（可致电球场确认）",
+    bookingMethod: "电话或邮件 enquiries@opgc.au 预定，或官网联系表单",
+    phone: "(02) 9728 7777", website: "https://opgc.au/cms/",
+    tags: ["乔治河畔", "公园式球场", "原利物浦高尔夫球会更名", "水障碍多"],
+    sourceUrl: "https://opgc.au/cms/"
+  },
+  {
+    name: "Brighton Lakes Recreation & Golf Club（原 New Brighton Golf Club 更名重建）", type: "public", suburb: "Moorebank",
+    address: "43 Brickmakers Drive, Moorebank NSW 2170",
+    lat: -33.9450, lon: 150.9450,
+    holes: 18, par: 70,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "N/A - 官网未公开具体价格（建议致电或查询预定系统）", greenFeeWeekend: "N/A - 官网未公开具体价格（建议致电或查询预定系统）",
+    cartHire: "N/A - 未公开",
+    bookingMethod: "在线预定 brightonlakes.miclub.com.au，或电话",
+    phone: "(02) 9195 1000", website: "https://www.brightonlakesrgc.com.au",
+    tags: ["乔治河畔", "近期重建球场", "公共球场", "Bob Harrison设计"],
+    sourceUrl: "https://www.brightonlakesrgc.com.au/"
+  },
+  {
+    name: "Macquarie Links International Golf Club", type: "private", suburb: "Macquarie Links",
+    address: "23 Macquarie Links Drive, Macquarie Links NSW 2565",
+    lat: -33.9700, lon: 150.8900,
+    holes: 18, par: 72,
+    courseRating: "73.6（第三方数据库，官方未确认）", slopeRating: "140（第三方数据库，官方未确认）",
+    greenFeeWeekday: "仅限会员及嘉宾 - 会员客人价格约 $55（周一特惠）/ $65（周二至周五，含球车，第三方来源）", greenFeeWeekend: "仅限会员及嘉宾 - 约 $85（含球车，第三方来源）",
+    cartHire: "含在部分套餐内，具体价格 N/A - 未公开",
+    bookingMethod: "仅限会员及会员邀请嘉宾，Pro Shop电话 +61 2 8796 5811",
+    phone: "(02) 8796 5888", website: "https://www.macquarielinksgolfclub.com.au",
+    tags: ["私人球会", "Robin Nelson设计", "锦标赛级别布局", "住宅区球场"],
+    sourceUrl: "https://www.macquarielinksgolfclub.com.au/macquarie-links-international-golf-club/"
+  },
+  {
+    name: "Campbelltown Golf Club", type: "public", suburb: "Glen Alpine",
+    address: "1 Golf Course Drive, Glen Alpine NSW 2560",
+    lat: -34.0850, lon: 150.8150,
+    holes: 18, par: 72,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $36（18洞）/ $25（9洞）/ 青少年 $12", greenFeeWeekend: "AUD $45（18洞）/ $30（9洞）/ 青少年 $12",
+    cartHire: "电动球车 $50（18洞，访客）/ $35（会员）；9洞 $35（访客）/ $25（会员）；球杆租赁18洞 $30，9洞 $20",
+    bookingMethod: "在线预定系统（需注册），或电话 Pro Shop (02) 4622 2990",
+    phone: "(02) 4622 2900", website: "https://www.campbelltowngolfclub.com.au",
+    tags: ["公共球场", "西南悉尼", "适合家庭", "全年开放预订"],
+    sourceUrl: "https://www.campbelltowngolfclub.com.au/cms/golffeesandbookings/"
+  },
+  {
+    name: "Macarthur Grange Country Club", type: "public", suburb: "Kearns",
+    address: "Lot 18 Raby Road, Kearns NSW 2558",
+    lat: -34.0350, lon: 150.8150,
+    holes: 18, par: 70,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "约 AUD $45起（18洞，具体周中/周末细分未公开）", greenFeeWeekend: "约 AUD $50起（18洞，具体价格建议致电确认）",
+    cartHire: "N/A - 未公开具体价格",
+    bookingMethod: "电话、邮件 hello@macarthurgrange.com.au，或官网预定表单",
+    phone: "(02) 9820 4446", website: "https://macarthurgrange.com.au",
+    tags: ["links风格球场", "公共球场", "起伏地形", "球场用地已获批住宅重建规划，未来可能关闭"],
+    sourceUrl: "https://macarthurgrange.com.au/play-golf/"
+  },
+  {
+    name: "Camden Golf Club（Studley Park）", type: "semi-private", suburb: "Narellan",
+    address: "50 Lodges Road, Narellan NSW 2567",
+    lat: -34.0500, lon: 150.7250,
+    holes: 18, par: "71（第三方来源标注71，另有来源标注73，官方未确认）",
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $30（18洞）", greenFeeWeekend: "AUD $45（18洞）",
+    cartHire: "N/A - 未公开具体价格（可致电 Pro Shop (02) 4648 2387）",
+    bookingMethod: "在线预定 camden.miclub.com.au，或电话",
+    phone: "(02) 4646 1203", website: "https://www.camdengolfclub.com.au",
+    tags: ["Studley Park", "全年对外开放", "本特草果岭", "适合新手"],
+    sourceUrl: "https://www.camdengolfclub.com.au/golf"
+  },
+  {
+    name: "Lakeside Golf Club Camden（Camden Lakeside Country Club）", type: "public", suburb: "Catherine Field",
+    address: "50 Raby Road, Catherine Field NSW 2171",
+    lat: -34.0000, lon: 150.7550,
+    holes: 18, par: 72,
+    courseRating: "73（AGU标注，第三方来源）", slopeRating: "126（蓝T台，第三方数据库，官方未确认，范围124-131）",
+    greenFeeWeekday: "AUD $55-70（18洞，含/不含球车，视套餐而定）", greenFeeWeekend: "AUD $85（18洞，含球车）",
+    cartHire: "含在部分套餐内；具体单独价格 N/A - 未公开",
+    bookingMethod: "在线预定 camdenlakeside.miclub.com.au，或电话",
+    phone: "(02) 8777 1000", website: "https://camdenlakeside.com.au",
+    tags: ["Peter Thomson设计", "links风格", "2019 Golf NSW都市球会年度奖", "锦标赛级球场"],
+    sourceUrl: "https://camdenlakeside.com.au/"
+  },
+  {
+    name: "Camden Valley Golf Resort", type: "public", suburb: "Catherine Field",
+    address: "810 Camden Valley Way, Catherine Field NSW 2171",
+    lat: -33.9850, lon: 150.7700,
+    holes: "27（分为三个9洞球场组合）", par: "36+36（各9洞组合，官方总par未公开）",
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "约 AUD $25-35（18洞，第三方来源，具体周中/周末细分未公开）", greenFeeWeekend: "约 AUD $25-35（18洞，第三方来源，具体周中/周末细分未公开）",
+    cartHire: "提供电动球车租赁，具体价格 N/A - 未公开",
+    bookingMethod: "电话或邮件 resort@camdenvalley.com.au 预定",
+    phone: "(02) 9606 5301", website: "http://www.camdenvalley.com.au",
+    tags: ["1964年开业", "27洞组合球场", "度假村式", "老牌球场"],
+    sourceUrl: "https://www.1golf.eu/en/club/camden-valley-golf-resort/"
+  },
+  {
+    name: "Antill Park Country Golf Club", type: "public", suburb: "Picton",
+    address: "Jarvisfield Road, Picton NSW 2571",
+    lat: -34.1750, lon: 150.6100,
+    holes: 18, par: 70,
+    courseRating: "70.2（蓝T台，第三方数据库，官方未确认）", slopeRating: "114-124（视T台而定，第三方数据库，官方未确认）",
+    greenFeeWeekday: "AUD $35（18洞）/ $25（9洞）/ 长者18洞 $25", greenFeeWeekend: "AUD $45（18洞）/ $30（9洞）",
+    cartHire: "N/A - 未公开具体价格",
+    bookingMethod: "电话 (02) 4677 1512（选项1）或邮件 proshop@antillpark.com.au",
+    phone: "(02) 4677 1512", website: "https://antillpark.com.au",
+    tags: ["Razorback山麓", "水障碍多", "公共球场", "性价比高"],
+    sourceUrl: "https://antillpark.com.au/golf/competitions-golf-fees/"
+  },
+  {
+    name: "Richmond Golf Club", type: "public", suburb: "Richmond",
+    address: "Bosworth Road, Richmond, NSW 2753",
+    lat: -33.5928, lon: 150.7508,
+    holes: 18, par: 70,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "127 / 124 / 122（男子，各发球台，第三方数据库，官方未确认）",
+    greenFeeWeekday: "AUD $45（18洞）/ $25（9洞）/ $25 暮色场（3点后）", greenFeeWeekend: "同平日价格，具体以官网当日公告为准（价格自2026年5月6日生效）",
+    cartHire: "球车：会员 $38（18洞）/$19（9洞）；非会员 $46（18洞）/$23（9洞）",
+    bookingMethod: "在线预定或电话联系职业部（Pro Shop）；公众预订时段有限",
+    phone: "(02) 4578 1739", website: "https://www.richmondgolfclub.com.au",
+    tags: ["公共球场", "新州最古老原址球场之一", "霍克斯伯里地区", "18洞传统球场"],
+    sourceUrl: "https://www.richmondgolfclub.com.au/cms/bookings/"
+  },
+  {
+    name: "Windsor Country Golf Club", type: "public", suburb: "South Windsor",
+    address: "51 McQuade Avenue, South Windsor, NSW 2756",
+    lat: -33.6103, lon: 150.8154,
+    holes: 18, par: "71（第三方数据库，官方未确认）",
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $45（18洞）/ $35（9洞）", greenFeeWeekend: "AUD $55（18洞）/ $45（9洞）",
+    cartHire: "会员 $40（18洞）/$30（9洞）；非会员 $50（18洞）/$40（9洞）；自带球车 $15-20",
+    bookingMethod: "在线预定 windsorgolfclub.com.au，或电话",
+    phone: "(02) 4577 4390", website: "https://windsorgolfclub.com.au",
+    tags: ["公共球场", "蓝山景观", "霍克斯伯里地区", "RSL附属球场"],
+    sourceUrl: "https://windsorgolfclub.com.au/golf/pricing/"
+  },
+  {
+    name: "Riverside Oaks Golf Resort（Bungool + Gangurru 双球场度假村）", type: "public", suburb: "Cattai",
+    address: "74 O'Briens Road, Cattai, NSW 2756",
+    lat: -33.5386, lon: 150.9219,
+    holes: "36（两个18洞球场：Bungool 球场 + Gangurru 球场）", par: "72（两球场均为标准72杆）",
+    courseRating: "70.7（Bungool 蓝T台，男子，第三方数据库，官方未确认）", slopeRating: "122（Bungool 蓝T台，男子）/ 118（白T台）/ 126（红T台，女子）（第三方数据库，官方未确认）",
+    greenFeeWeekday: "约 AUD $100/人（含共享球车，具体按球场浮动，Gangurru 曾报价约$70）", greenFeeWeekend: "约 AUD $125/人（含共享球车，公众假日同价）",
+    cartHire: "已含在大部分套餐内；单人使用球车加收约 $25",
+    bookingMethod: "在线预定 riversideoaks.com.au 或邮件 proshop@riversideoaks.com.au",
+    phone: "(02) 4560 3200", website: "https://www.riversideoaks.com.au",
+    tags: ["度假村球场", "双18洞球场", "河景球场", "锦标赛级别设计"],
+    sourceUrl: "https://www.riversideoaks.com.au/cms/public-bookings/"
+  },
+  {
+    name: "Lynwood Country Club", type: "semi-private", suburb: "Pitt Town",
+    address: "4 Pitt Town Bottoms Road, Pitt Town, NSW 2756",
+    lat: -33.5651, lon: 150.8577,
+    holes: 18, par: 72,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "126（第三方数据库，官方未确认）",
+    greenFeeWeekday: "N/A - 具体价格未公开，官网称工作日/周末均有优惠价", greenFeeWeekend: "N/A - 具体价格未公开，需在线查询或致电",
+    cartHire: "N/A - 未公开，官网确认提供球车租赁",
+    bookingMethod: "在线预定 lynwood.com.au/green-fees-and-bookings，或电话",
+    phone: "(02) 4580 2800", website: "https://www.lynwood.com.au",
+    tags: ["半私人球会", "230英亩起伏地形", "湿地与天然粗草区", "会员嘉宾及公众可订"],
+    sourceUrl: "https://www.lynwood.com.au/green-fees-and-bookings"
+  },
+  {
+    name: "Glenmore Heritage Valley Golf Club（Glenmore Mulgoa Golf Club）", type: "semi-private", suburb: "Mulgoa",
+    address: "690 Mulgoa Road, Mulgoa, NSW 2745",
+    lat: -33.7911, lon: 150.6607,
+    holes: "27（The Links 18 + The Valley 18，共用9洞）", par: "72（The Links 18号道）",
+    courseRating: "74（蓝T台）/ 72（白T台）/ 75（红T台）— 官方球会公布数据", slopeRating: "N/A - 未公开",
+    greenFeeWeekday: "AUD $45（18洞）/ $35（9洞），每日对外开放", greenFeeWeekend: "同平日价格（每日对外开放，具体以官网为准）",
+    cartHire: "N/A - 未公开，官网确认提供球车及练习设施",
+    bookingMethod: "在线预定或电话 golf@glenmoregolf.com.au",
+    phone: "(02) 4733 1230", website: "https://glenmoregolf.com.au",
+    tags: ["27洞球场", "历史遗产建筑（1809-1868）", "蓝山山麓", "悉尼少数27洞球场之一"],
+    sourceUrl: "https://glenmoregolf.com.au/our-courses/"
+  },
+  {
+    name: "Twin Creeks Private Golf & Country Club", type: "private", suburb: "Luddenham（近Mulgoa）",
+    address: "2-8 Twin Creeks Drive, Luddenham, NSW 2745（部分资料标注为Mulgoa地区）",
+    lat: -33.8264, lon: 150.6994,
+    holes: 18, par: 72,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "约 AUD $75（18洞）/ $45（9洞）— 有限公众/社会预订", greenFeeWeekend: "约 AUD $120（18洞）/ $70（9洞）— 周末上午通常仅限会员及嘉宾",
+    cartHire: "非会员球车：约 $50（18洞）/ $35（9洞）",
+    bookingMethod: "私人球会，非会员限量预订需通过官网或联系职业总监（Director of Golf）",
+    phone: "(02) 9670 8877 / 8888", website: "https://twincreeksgolf.au",
+    tags: ["私人球会", "Graham Marsh设计", "800英亩天然灌木林", "有限对外开放"],
+    sourceUrl: "https://twincreeksgolf.au/tee-times-green-fees/"
+  },
+  {
+    name: "Castle Hill Country Club", type: "private", suburb: "Norwest（近Baulkham Hills）",
+    address: "7 Spurway Drive, Norwest, NSW 2153",
+    lat: -33.7208, lon: 150.9614,
+    holes: 18, par: 72,
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "仅限会员及嘉宾 - 未公开价格（第三方数据库曾报价约AUD $70/18洞，官方未确认）", greenFeeWeekend: "仅限会员及嘉宾 - 未公开价格",
+    cartHire: "N/A - 仅限会员及嘉宾",
+    bookingMethod: "仅限会员及会员嘉宾",
+    phone: "+61 2 9634 2499", website: "https://www.castlehillcountryclub.com.au",
+    tags: ["私人球会", "悉尼西北高级球会", "167英亩", "非会员不对外开放"],
+    sourceUrl: "https://www.castlehillcountryclub.com.au/cms/"
+  },
+  {
+    name: "Asquith Golf Club", type: "public", suburb: "Mount Colah",
+    address: "Lord Street, Mount Colah, NSW 2079",
+    lat: -33.6614, lon: 151.1214,
+    holes: 18, par: 70,
+    courseRating: "69.9（第三方数据库，官方未确认）", slopeRating: "131-134（因发球台不同而异，第三方数据库，官方未确认）",
+    greenFeeWeekday: "约 AUD $40（18洞），每日对外开放", greenFeeWeekend: "约 AUD $40（18洞），需提前预订",
+    cartHire: "N/A - 未公开，需穿软钉鞋（softspikes）",
+    bookingMethod: "在线预定 asquithgolfclub.com.au/cms/public-bookings，或电话/邮件 office@asquithgolfclub.com.au",
+    phone: "+61 2 9477 1266", website: "https://www.asquithgolfclub.com.au",
+    tags: ["公共球场", "北岸球场", "每日对外开放", "预订须知"],
+    sourceUrl: "https://www.asquithgolfclub.com.au/cms/public-bookings/"
+  },
+  {
+    name: "Wallacia Panthers Golf & Country Club", type: "public", suburb: "Wallacia",
+    address: "13 Park Road, Wallacia, NSW 2745",
+    lat: -33.8506, lon: 150.6969,
+    holes: 18, par: "N/A - 未公开",
+    courseRating: "N/A - 公开渠道未能核实", slopeRating: "N/A - 公开渠道未能核实",
+    greenFeeWeekday: "AUD $25（18洞）/ $20（9洞）；下午1点后不限洞数 $25", greenFeeWeekend: "AUD $35（18洞）/ $25（9洞，含公共假日）",
+    cartHire: "职业部提供球车及球杆租赁，具体价格请致电确认",
+    bookingMethod: "电话预订 Pro Shop (02) 4773 8835 或邮件 wallaciaproshop@panthers.com.au",
+    phone: "(02) 4773 8417 / 4773 8835", website: "http://wallacia.panthers.com.au/golf/",
+    tags: ["公共球场", "1932年建立", "曾有公墓改建提案但目前仍正常营业", "Panthers俱乐部旗下"],
+    sourceUrl: "https://www.golfindustrycentral.com.au/golf-industry-news/cemetery-a-dead-certainty-for-golf-club-site-at-wallacia/"
+  },
+  {
+    name: "Botany Golf Course（Botany Golf Club）", type: "public", suburb: "Botany",
+    address: "1434 Botany Road, Botany, NSW 2019",
+    lat: -33.9482, lon: 151.1990,
+    holes: 9, par: 33,
+    courseRating: "N/A - 未公开（9洞短球场，无正式球会评级）", slopeRating: "N/A - 未公开",
+    greenFeeWeekday: "N/A - 具体价格未在官网列出，需现场查询（第三方来源曾提及约AUD $18/18洞，官方未确认）", greenFeeWeekend: "N/A - 同平日，需现场查询",
+    cartHire: "提供手拉车（pull buggy）及球杆租赁，价格未公开",
+    bookingMethod: "无需预订，先到先得（Bayside Council 管理，每组最多4人）",
+    phone: "(02) 9316 4930", website: "https://www.bayside.nsw.gov.au/area/parks/botany-golf-course",
+    tags: ["公共球场", "市政委员会运营", "9洞短球场", "近悉尼机场"],
+    sourceUrl: "https://www.bayside.nsw.gov.au/area/parks/botany-golf-course"
+  }
+];
+
+const typeLabel = { "public": "公共 Public", "semi-private": "半私人 Semi-private", "private": "私人 Private" };
+const typeColor = { "public": "#6fcf97", "semi-private": "#f2c14e", "private": "#c65b6c" };
+
+function slugify(name){ return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""); }
+courses.forEach(c => c.id = slugify(c.name));
+
+function firstNumber(str){
+  if(str == null) return null;
+  const m = String(str).match(/[\d.]+/);
+  return m ? parseFloat(m[0]) : null;
+}
+function firstPrice(str){
+  if(str == null) return null;
+  const m = String(str).match(/\$([\d.]+)/);
+  return m ? parseFloat(m[1]) : null;
+}
+
+// ---- Map ----
+const map = L.map('map', { scrollWheelZoom: false }).setView([-33.865, 151.205], 11);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom: 18
+}).addTo(map);
+
+const markerById = {};
+courses.forEach(c => {
+  const marker = L.circleMarker([c.lat, c.lon], {
+    radius: 8, weight: 2, color: "#0c1712", fillColor: typeColor[c.type], fillOpacity: 0.9
+  }).addTo(map);
+  marker.bindPopup(`<b>${c.name}</b><br>${typeLabel[c.type]} · ${c.suburb}<br><a href="${c.website}" target="_blank" rel="noopener">官网 →</a> · <a href="${satelliteUrl(c)}" target="_blank" rel="noopener">卫星图 →</a>`);
+  marker.on('click', () => focusCourse(c.id));
+  markerById[c.id] = marker;
+});
+
+function focusCourse(id){
+  setFilter("all");
+  const el = document.querySelector(`.card[data-id="${id}"]`);
+  if(!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "center" });
+  el.classList.add("flash");
+  setTimeout(() => el.classList.remove("flash"), 1600);
+}
+
+// ---- Cards ----
+// Google Maps satellite view centered on the course — real imagery, no API key
+// needed since this is just a link (not an embedded map).
+function satelliteUrl(c){
+  return `https://www.google.com/maps/@${c.lat},${c.lon},17z/data=!3m1!1e3`;
+}
+
+function statRow(k, v, extraClass){
+  const isNa = v == null || /^n\/a/i.test(String(v).trim());
+  return `<div class="stat"><span class="k">${k}</span><span class="v ${isNa ? "na" : (extraClass || "")}">${v}</span></div>`;
+}
+
+function cardHTML(c){
+  return `
+  <div class="card" data-id="${c.id}">
+    <div class="card-top">
+      <div class="course-name">${c.name}</div>
+      <div class="type-badge ${c.type}">${typeLabel[c.type]}</div>
+    </div>
+    <div class="course-meta">${c.suburb}, Sydney</div>
+    ${c.note ? `<div class="note-banner">⚠️ ${c.note}</div>` : ""}
+
+    <div class="stats">
+      ${statRow("洞数", c.holes)}
+      ${statRow("标准杆 Par", c.par)}
+      ${statRow("球场评级 Course Rating", c.courseRating)}
+      ${statRow("坡度评级 Slope Rating", c.slopeRating)}
+    </div>
+
+    <div class="section-lbl">预定与价格</div>
+    <div class="stats">
+      ${statRow("工作日价格", c.greenFeeWeekday, "price")}
+      ${statRow("周末价格", c.greenFeeWeekend, "price")}
+      ${statRow("球车租赁", c.cartHire)}
+      ${statRow("预定方式", c.bookingMethod)}
+      ${statRow("电话", c.phone)}
+    </div>
+
+    <div class="tag-row">${c.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>
+
+    <div class="link-row">
+      <a class="src-link primary" href="${c.website}" target="_blank" rel="noopener">→ 官网</a>
+      <a class="src-link primary" href="${satelliteUrl(c)}" target="_blank" rel="noopener">🛰 卫星图（球场布局）</a>
+      ${c.guideUrl ? `<a class="src-link" href="${c.guideUrl}" target="_blank" rel="noopener">📄 官方球场指南 →</a>` : ""}
+      <a class="src-link" href="${c.sourceUrl}" target="_blank" rel="noopener">数据来源 →</a>
+    </div>
+  </div>`;
+}
+
+let currentFilter = "all";
+let currentSort = "default";
+
+function render(){
+  let list = courses.filter(c => currentFilter === "all" || c.type === currentFilter);
+
+  if(currentSort === "holes") list = [...list].sort((a,b) => (firstNumber(b.holes)||0) - (firstNumber(a.holes)||0));
+  if(currentSort === "slope") list = [...list].sort((a,b) => {
+    const sa = firstNumber(a.slopeRating), sb = firstNumber(b.slopeRating);
+    if(sa == null) return 1; if(sb == null) return -1;
+    return sb - sa;
+  });
+  if(currentSort === "price") list = [...list].sort((a,b) => {
+    const pa = firstPrice(a.greenFeeWeekday), pb = firstPrice(b.greenFeeWeekday);
+    if(pa == null) return 1; if(pb == null) return -1;
+    return pa - pb;
+  });
+
+  document.getElementById("grid").innerHTML = list.map(cardHTML).join("");
+
+  const countEl = document.getElementById("courseCount");
+  if(countEl){
+    countEl.textContent = currentFilter === "all"
+      ? `共收录 ${courses.length} 个球场`
+      : `当前筛选（${typeLabel[currentFilter]}）：${list.length} 个 / 共收录 ${courses.length} 个球场`;
+  }
+}
+
+function setFilter(f){
+  currentFilter = f;
+  [...document.querySelectorAll('[data-filter]')].forEach(b => b.classList.toggle("active", b.dataset.filter === f));
+  render();
+}
+
+document.querySelectorAll('.controls .control-group')[0].addEventListener("click", (e) => {
+  if(e.target.tagName !== "BUTTON") return;
+  setFilter(e.target.dataset.filter);
+});
+document.querySelectorAll('.controls .control-group')[1].addEventListener("click", (e) => {
+  if(e.target.tagName !== "BUTTON") return;
+  [...document.querySelectorAll('[data-sort]')].forEach(b => b.classList.remove("active"));
+  e.target.classList.add("active");
+  currentSort = e.target.dataset.sort;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
