@@ -200,6 +200,7 @@
       <button data-sort="holes">按洞数</button>
       <button data-sort="slope">按坡度评级</button>
       <button data-sort="price">按工作日价格</button>
+      <button data-sort="distance">按距市中心距离</button>
     </div>
   </div>
 
@@ -1421,6 +1422,17 @@ const typeColor = { "public": "#6fcf97", "semi-private": "#f2c14e", "private": "
 function slugify(name){ return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""); }
 courses.forEach(c => c.id = slugify(c.name));
 
+// Sydney CBD (postcode 2000, Town Hall / GPO) — used as the reference point for "distance from city centre".
+const CBD = { lat: -33.8688, lon: 151.2093 };
+function haversineKm(lat1, lon1, lat2, lon2){
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+courses.forEach(c => c.distanceFromCbdKm = haversineKm(CBD.lat, CBD.lon, c.lat, c.lon));
+
 function firstNumber(str){
   if(str == null) return null;
   const m = String(str).match(/[\d.]+/);
@@ -1477,7 +1489,7 @@ function cardHTML(c){
       <div class="course-name">${c.name}</div>
       <div class="type-badge ${c.type}">${typeLabel[c.type]}</div>
     </div>
-    <div class="course-meta">${c.suburb}, Sydney</div>
+    <div class="course-meta">${c.suburb}, Sydney · 距市中心（悉尼2000）直线约 ${c.distanceFromCbdKm.toFixed(1)} 公里</div>
     ${c.note ? `<div class="note-banner">⚠️ ${c.note}</div>` : ""}
 
     <div class="stats">
@@ -1524,6 +1536,7 @@ function render(){
     if(pa == null) return 1; if(pb == null) return -1;
     return pa - pb;
   });
+  if(currentSort === "distance") list = [...list].sort((a,b) => a.distanceFromCbdKm - b.distanceFromCbdKm);
 
   document.getElementById("grid").innerHTML = list.map(cardHTML).join("");
 
