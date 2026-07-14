@@ -1476,10 +1476,10 @@ function focusCourse(id){
 function satelliteUrl(c){
   return `https://www.google.com/maps/@${c.lat},${c.lon},17z/data=!3m1!1e3`;
 }
-// Google Maps turn-by-turn directions to the course, starting from the user's
-// current location (browser will prompt for location permission) — no API key needed.
+// Google Maps place search for the course — opens Maps with the course's info
+// card (name, hours, reviews if matched) rather than a directions modal.
 function directionsUrl(c){
-  return `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lon}&destination_place_id=&travelmode=driving`;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.name + ", " + c.address)}`;
 }
 
 function statRow(k, v, extraClass){
