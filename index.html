@@ -1476,6 +1476,11 @@ function focusCourse(id){
 function satelliteUrl(c){
   return `https://www.google.com/maps/@${c.lat},${c.lon},17z/data=!3m1!1e3`;
 }
+// Google Maps turn-by-turn directions to the course, starting from the user's
+// current location (browser will prompt for location permission) — no API key needed.
+function directionsUrl(c){
+  return `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lon}&destination_place_id=&travelmode=driving`;
+}
 
 function statRow(k, v, extraClass){
   const isNa = v == null || /^n\/a/i.test(String(v).trim());
@@ -1512,6 +1517,7 @@ function cardHTML(c){
 
     <div class="link-row">
       <a class="src-link primary" href="${c.website}" target="_blank" rel="noopener">→ 官网</a>
+      <a class="src-link primary" href="${directionsUrl(c)}" target="_blank" rel="noopener">🧭 导航</a>
       <a class="src-link primary" href="${satelliteUrl(c)}" target="_blank" rel="noopener">🛰 卫星图（球场布局）</a>
       ${c.guideUrl ? `<a class="src-link" href="${c.guideUrl}" target="_blank" rel="noopener">📄 官方球场指南 →</a>` : ""}
       <a class="src-link" href="${c.sourceUrl}" target="_blank" rel="noopener">数据来源 →</a>
