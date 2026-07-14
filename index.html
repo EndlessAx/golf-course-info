@@ -107,6 +107,7 @@
 
   .card-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:2px; }
   .course-name{ font-family:'Oswald', sans-serif; font-weight:600; font-size:21px; text-transform: uppercase; letter-spacing: 0.01em; line-height:1.2; }
+  .course-name-cn{ font-family:'Inter', sans-serif; font-weight:500; font-size:13px; color: var(--cream-dim); margin-top:2px; }
   .type-badge{
     font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:.04em; text-transform:uppercase;
     padding: 4px 9px; border-radius: 100px; white-space:nowrap; flex-shrink:0; margin-top:3px;
@@ -222,7 +223,7 @@
 <script>
 const courses = [
   {
-    name: "Moore Park Golf", type: "public", suburb: "Moore Park",
+    name: "Moore Park Golf", nameCn: "摩尔公园高尔夫球场", type: "public", suburb: "Moore Park",
     address: "Corner Anzac Parade & Cleveland Street, Moore Park, Sydney NSW 2021",
     lat: -33.8956, lon: 151.2210,
     holes: "10（过渡期布局，2026年7月1日起启用；原18洞球场因Moore Park South改造工程关闭）",
@@ -237,7 +238,7 @@ const courses = [
     note: "Moore Park South 改造工程：2026年7月起先改为10洞，预计2026年10月扩展为过渡12洞，永久12洞公共球场预计2028年完工。"
   },
   {
-    name: "Bondi Golf & Diggers Club", type: "public", suburb: "North Bondi",
+    name: "Bondi Golf & Diggers Club", nameCn: "邦迪高尔夫及老兵俱乐部", type: "public", suburb: "North Bondi",
     address: "5 Military Rd, North Bondi, NSW 2026",
     lat: -33.8905, lon: 151.2822,
     holes: 9, par: 28,
@@ -251,7 +252,7 @@ const courses = [
     guideUrl: "https://course.bluegolf.com/bluegolf/course/course/bondi/detailedscorecard.htm"
   },
   {
-    name: "Marrickville Golf, Sporting & Community Club", type: "public", suburb: "Marrickville",
+    name: "Marrickville Golf, Sporting & Community Club", nameCn: "马里克维尔高尔夫及社区俱乐部", type: "public", suburb: "Marrickville",
     address: "Wharf Street, Marrickville, NSW 2204",
     lat: -33.9070, lon: 151.1560,
     holes: 18, par: "60（男）/ 62（女）— 短打型球场",
@@ -265,7 +266,7 @@ const courses = [
     guideUrl: "https://www.marrickvillegolf.com.au/course-guide"
   },
   {
-    name: "Warringah Golf Club", type: "public", suburb: "North Manly",
+    name: "Warringah Golf Club", nameCn: "沃林加高尔夫俱乐部", type: "public", suburb: "North Manly",
     address: "292 Condamine Street, North Manly, NSW 2100",
     lat: -33.7676, lon: 151.2705,
     holes: 18, par: "70（男）/ 69（女）",
@@ -278,7 +279,7 @@ const courses = [
     sourceUrl: "https://www.warringahgolfclub.com.au/"
   },
   {
-    name: "Long Reef Golf Club", type: "public", suburb: "Collaroy",
+    name: "Long Reef Golf Club", nameCn: "朗礁高尔夫俱乐部", type: "public", suburb: "Collaroy",
     address: "Anzac Avenue, Collaroy, NSW 2097",
     lat: -33.7368, lon: 151.3007,
     holes: 18, par: "71（男）/ 73（女）",
@@ -291,7 +292,7 @@ const courses = [
     sourceUrl: "https://longreefgolfclub.com.au/green-fees-publicsocial/"
   },
   {
-    name: "St Michael's Golf Club", type: "semi-private", suburb: "Little Bay",
+    name: "St Michael's Golf Club", nameCn: "圣迈克尔高尔夫俱乐部", type: "semi-private", suburb: "Little Bay",
     address: "Jennifer Street, Little Bay, NSW 2035",
     lat: -33.9700, lon: 151.2400,
     holes: 18, par: 72,
@@ -304,7 +305,7 @@ const courses = [
     sourceUrl: "https://www.stmichaelsgolf.com.au/cms/membership/golf-courses-sydney/"
   },
   {
-    name: "Eastlake Golf Club", type: "semi-private", suburb: "Kingsford",
+    name: "Eastlake Golf Club", nameCn: "东湖高尔夫俱乐部", type: "semi-private", suburb: "Kingsford",
     address: "67 Gardeners Road, Kingsford, NSW 2032",
     lat: -33.9270, lon: 151.2270,
     holes: 18, par: 72,
@@ -317,7 +318,7 @@ const courses = [
     sourceUrl: "https://www.eastlakegolfclub.com.au/cms/play/green-fees/"
   },
   {
-    name: "Bonnie Doon Golf Club", type: "semi-private", suburb: "Pagewood",
+    name: "Bonnie Doon Golf Club", nameCn: "邦尼杜恩高尔夫俱乐部", type: "semi-private", suburb: "Pagewood",
     address: "Banks Avenue, Pagewood, NSW 2035",
     lat: -33.9420, lon: 151.2210,
     holes: 18, par: 71,
@@ -331,7 +332,7 @@ const courses = [
     guideUrl: "https://course.bluegolf.com/bluegolf/course/course/bonniedoon/detailedscorecard.htm"
   },
   {
-    name: "Pennant Hills Golf Club", type: "semi-private", suburb: "Beecroft",
+    name: "Pennant Hills Golf Club", nameCn: "彭南特山高尔夫俱乐部", type: "semi-private", suburb: "Beecroft",
     address: "Cnr Copeland & Burns Road South, Beecroft, NSW 2119",
     lat: -33.7480, lon: 151.0680,
     holes: 18, par: 71,
@@ -344,7 +345,7 @@ const courses = [
     sourceUrl: "https://www.pennanthillsgolfclub.com.au/cms/visitors/contacts/"
   },
   {
-    name: "Killara Golf Club", type: "semi-private", suburb: "Killara",
+    name: "Killara Golf Club", nameCn: "基拉拉高尔夫俱乐部", type: "semi-private", suburb: "Killara",
     address: "556 Pacific Highway, Killara, NSW 2071",
     lat: -33.7660, lon: 151.1580,
     holes: 18, par: 72,
@@ -357,7 +358,7 @@ const courses = [
     sourceUrl: "https://www.kgc.com.au/cms/contact/"
   },
   {
-    name: "Cromer Golf Club", type: "semi-private", suburb: "Cromer",
+    name: "Cromer Golf Club", nameCn: "克罗默高尔夫俱乐部", type: "semi-private", suburb: "Cromer",
     address: "2-10 Cromer Road, Cromer, NSW 2099",
     lat: -33.7460, lon: 151.2680,
     holes: 18, par: 70,
@@ -370,7 +371,7 @@ const courses = [
     sourceUrl: "https://cromergolfclub.com.au/"
   },
   {
-    name: "Royal Sydney Golf Club", type: "private", suburb: "Rose Bay",
+    name: "Royal Sydney Golf Club", nameCn: "皇家悉尼高尔夫俱乐部", type: "private", suburb: "Rose Bay",
     address: "Kent Road, Rose Bay, NSW 2029",
     lat: -33.8730, lon: 151.2660,
     holes: "36（18洞锦标赛球场 + 9洞Centenary球场）", par: 72,
@@ -384,7 +385,7 @@ const courses = [
     guideUrl: "https://www.provisualizer.com/courses/royalsydneychampionship.php"
   },
   {
-    name: "The Australian Golf Club", type: "private", suburb: "Rosebery",
+    name: "The Australian Golf Club", nameCn: "澳洲高尔夫俱乐部", type: "private", suburb: "Rosebery",
     address: "Bannerman Crescent, Rosebery, NSW 2018（具体门牌未独立核实）",
     lat: -33.9160, lon: 151.1980,
     holes: 18, par: 72,
@@ -398,7 +399,7 @@ const courses = [
     guideUrl: "https://course.bluegolf.com/bluegolf/course/course/australiangc/detailedscorecard.htm"
   },
   {
-    name: "The Lakes Golf Club", type: "private", suburb: "Eastlakes",
+    name: "The Lakes Golf Club", nameCn: "湖畔高尔夫俱乐部", type: "private", suburb: "Eastlakes",
     address: "Cnr King Street & Vernon Avenue, Eastlakes, NSW 2018",
     lat: -33.9280, lon: 151.2010,
     holes: 18, par: 72,
@@ -411,7 +412,7 @@ const courses = [
     sourceUrl: "https://www.golfnsw.org.au/golf-clubs/the-lakes-golf-club/"
   },
   {
-    name: "New South Wales Golf Club", type: "private", suburb: "La Perouse",
+    name: "New South Wales Golf Club", nameCn: "新南威尔士高尔夫俱乐部", type: "private", suburb: "La Perouse",
     address: "1528 Anzac Parade, La Perouse, NSW 2036",
     lat: -33.9880, lon: 151.2320,
     holes: 18, par: 72,
@@ -424,7 +425,7 @@ const courses = [
     sourceUrl: "https://en.wikipedia.org/wiki/New_South_Wales_Golf_Club"
   },
   {
-    name: "Concord Golf Club", type: "private", suburb: "Concord",
+    name: "Concord Golf Club", nameCn: "康科德高尔夫俱乐部", type: "private", suburb: "Concord",
     address: "190 Majors Bay Road, Concord, NSW 2137",
     lat: -33.8580, lon: 151.1020,
     holes: 18, par: "N/A - 官方未确认（第三方来源不一致）",
@@ -438,7 +439,7 @@ const courses = [
     guideUrl: "https://course.bluegolf.com/bluegolf/course/course/concordgcau/detailedscorecard.htm"
   },
   {
-    name: "Elanora Country Club", type: "private", suburb: "Elanora Heights",
+    name: "Elanora Country Club", nameCn: "埃拉诺拉乡村俱乐部", type: "private", suburb: "Elanora Heights",
     address: "154 Elanora Road, Elanora Heights, NSW 2101",
     lat: -33.6980, lon: 151.2810,
     holes: 18, par: 72,
@@ -451,7 +452,7 @@ const courses = [
     sourceUrl: "https://www.golfpass.com/travel-advisor/courses/19192-elanora-country-club"
   },
   {
-    name: "Lane Cove Golf Course", type: "public", suburb: "Lane Cove",
+    name: "Lane Cove Golf Course", nameCn: "莱恩科夫高尔夫球场", type: "public", suburb: "Lane Cove",
     address: "180 River Road, Lane Cove, NSW 2066",
     lat: -33.8220, lon: 151.1520,
     holes: 9, par: 60,
@@ -465,7 +466,7 @@ const courses = [
     note: "经纬度为River Road/Lane Cove区域估算值，非精确测绘；球场目前处于改造阶段，建议预定前致电确认当前布局与价格。"
   },
   {
-    name: "Newgreens Chatswood (原 Chatswood Golf Club)", type: "public", suburb: "Chatswood",
+    name: "Newgreens Chatswood (原 Chatswood Golf Club)", nameCn: "新绿查茨伍德（原查茨伍德高尔夫俱乐部）", type: "public", suburb: "Chatswood",
     address: "130 Beaconsfield Road, Chatswood, NSW 2067",
     lat: -33.7970, lon: 151.1830,
     holes: 12, par: 44,
@@ -479,7 +480,7 @@ const courses = [
     note: "2026年新开业球场（原1935年建立的Chatswood Golf Club重新开发而成），部分信息（尤其价格）官网未公开，建议以在线预定系统实时价格为准。"
   },
   {
-    name: "Randwick Golf Club", type: "public", suburb: "Malabar",
+    name: "Randwick Golf Club", nameCn: "兰德维克高尔夫俱乐部", type: "public", suburb: "Malabar",
     address: "Corner Howe Street and Prince Edward Street, Malabar NSW 2036",
     lat: -33.9581, lon: 151.2465,
     holes: 18, par: 59,
@@ -492,7 +493,7 @@ const courses = [
     sourceUrl: "https://randwickgolfclub.golfer.com.au/green-fees/0/23688"
   },
   {
-    name: "Woollahra Golf Club", type: "public", suburb: "Rose Bay",
+    name: "Woollahra Golf Club", nameCn: "沃拉拉高尔夫俱乐部", type: "public", suburb: "Rose Bay",
     address: "50 O'Sullivan Road, Rose Bay, NSW 2029",
     lat: -33.8735, lon: 151.2685,
     holes: 9, par: 68,
@@ -505,7 +506,7 @@ const courses = [
     sourceUrl: "https://www.woollahragolfclub.com/cms/golf/golf-booking-and-registration/"
   },
   {
-    name: "The Coast Golf Club", type: "public", suburb: "Little Bay",
+    name: "The Coast Golf Club", nameCn: "海岸高尔夫俱乐部", type: "public", suburb: "Little Bay",
     address: "1 Coast Hospital Road, Little Bay, NSW 2036",
     lat: -33.9779, lon: 151.2422,
     holes: 18, par: 70,
@@ -518,7 +519,7 @@ const courses = [
     sourceUrl: "https://www.coastgolf.com.au/cms/public-bookings/"
   },
   {
-    name: "Bardwell Valley Golf Club", type: "public", suburb: "Bexley",
+    name: "Bardwell Valley Golf Club", nameCn: "巴德维尔谷高尔夫俱乐部", type: "public", suburb: "Bexley",
     address: "2A Hillcrest Avenue, Bardwell Valley NSW 2207",
     lat: -33.9376, lon: 151.1370,
     holes: 18, par: "N/A - 公开渠道未能核实",
@@ -531,7 +532,7 @@ const courses = [
     sourceUrl: "https://bardwellvalleygolf.com.au/green-fees/"
   },
   {
-    name: "Barnwell Park Golf Club", type: "public", suburb: "Five Dock",
+    name: "Barnwell Park Golf Club", nameCn: "巴恩威尔公园高尔夫俱乐部", type: "public", suburb: "Five Dock",
     address: "551 Lyons Road West, Five Dock NSW 2046",
     lat: -33.8630, lon: 151.1280,
     holes: 18, par: 61,
@@ -544,7 +545,7 @@ const courses = [
     sourceUrl: "https://barnwellparkgolfclub.com.au/golf/"
   },
   {
-    name: "Bexley Golf Club", type: "semi-private", suburb: "Kingsgrove",
+    name: "Bexley Golf Club", nameCn: "贝克斯利高尔夫俱乐部", type: "semi-private", suburb: "Kingsgrove",
     address: "203 Stoney Creek Road, Kingsgrove, NSW 2208",
     lat: -33.9505, lon: 151.1055,
     holes: 18, par: 64,
@@ -557,7 +558,7 @@ const courses = [
     sourceUrl: "https://www.golfpass.com/travel-advisor/courses/19132-bexley-golf-club"
   },
   {
-    name: "Canterbury Public Golf Course", type: "public", suburb: "Beverly Hills",
+    name: "Canterbury Public Golf Course", nameCn: "坎特伯雷公共高尔夫球场", type: "public", suburb: "Beverly Hills",
     address: "196 Moorefields Road, Beverly Hills, NSW 2209",
     lat: -33.9528, lon: 151.0870,
     holes: 9, par: 34,
@@ -570,7 +571,7 @@ const courses = [
     sourceUrl: "https://canterburygolf.com.au/"
   },
   {
-    name: "Carnarvon Golf Club", type: "semi-private", suburb: "Lidcombe",
+    name: "Carnarvon Golf Club", nameCn: "卡那封高尔夫俱乐部", type: "semi-private", suburb: "Lidcombe",
     address: "Bconnells Point Road, Lidcombe NSW 2141",
     lat: -33.8600, lon: 151.0490,
     holes: 18, par: 72,
@@ -583,7 +584,7 @@ const courses = [
     sourceUrl: "https://carnarvongolf.com.au/green-fees"
   },
   {
-    name: "Massey Park Golf Club", type: "public", suburb: "Concord",
+    name: "Massey Park Golf Club", nameCn: "梅西公园高尔夫俱乐部", type: "public", suburb: "Concord",
     address: "Ian Parade, Concord, NSW 2137",
     lat: -33.8570, lon: 151.1030,
     holes: 18, par: 66,
@@ -596,7 +597,7 @@ const courses = [
     sourceUrl: "https://www.masseypark.com.au/green-fees-dress-code/"
   },
   {
-    name: "Strathfield Golf Club", type: "semi-private", suburb: "Strathfield",
+    name: "Strathfield Golf Club", nameCn: "斯特拉斯菲尔德高尔夫俱乐部", type: "semi-private", suburb: "Strathfield",
     address: "52 Weeroona Road, Strathfield NSW 2135",
     lat: -33.8790, lon: 151.0890,
     holes: 18, par: 70,
@@ -609,7 +610,7 @@ const courses = [
     sourceUrl: "https://www.strathfieldgolf.com.au/cms/golf/green-fees/"
   },
   {
-    name: "Bankstown Golf Club", type: "semi-private", suburb: "Milperra",
+    name: "Bankstown Golf Club", nameCn: "班克斯敦高尔夫俱乐部", type: "semi-private", suburb: "Milperra",
     address: "70 Ashford Avenue, Milperra, NSW 2214",
     lat: -33.9310, lon: 150.9975,
     holes: 18, par: "N/A - 公开渠道未能核实",
@@ -622,7 +623,7 @@ const courses = [
     sourceUrl: "https://www.bankstowngolf.com.au/cms/golf/public-bookings/"
   },
   {
-    name: "Beverley Park Golf Club", type: "semi-private", suburb: "Beverley Park",
+    name: "Beverley Park Golf Club", nameCn: "贝弗利公园高尔夫俱乐部", type: "semi-private", suburb: "Beverley Park",
     address: "87 Jubilee Avenue, Beverley Park, NSW 2217",
     lat: -33.9755, lon: 151.1215,
     holes: 18, par: 70,
@@ -635,7 +636,7 @@ const courses = [
     sourceUrl: "https://www.golfpass.com/travel-advisor/courses/19131-beverley-park-golf-club"
   },
   {
-    name: "Hurstville Golf Course", type: "public", suburb: "Peakhurst",
+    name: "Hurstville Golf Course", nameCn: "赫斯特维尔高尔夫球场", type: "public", suburb: "Peakhurst",
     address: "Lorraine Street, Peakhurst NSW 2210",
     lat: -33.9535, lon: 151.0640,
     holes: 18, par: "N/A - 公开渠道未能核实",
@@ -648,7 +649,7 @@ const courses = [
     sourceUrl: "https://hurstvillegolf.com.au/price-rise-2025/"
   },
   {
-    name: "Kareela Golf Club", type: "public", suburb: "Kareela",
+    name: "Kareela Golf Club", nameCn: "卡雷拉高尔夫俱乐部", type: "public", suburb: "Kareela",
     address: "1 Bates Drive, Kareela, NSW 2232",
     lat: -34.0175, lon: 151.0700,
     holes: 18, par: 65,
@@ -661,7 +662,7 @@ const courses = [
     sourceUrl: "https://www.kareelagolf.com.au/golf/"
   },
   {
-    name: "The Ridge Golf Course", type: "public", suburb: "Barden Ridge",
+    name: "The Ridge Golf Course", nameCn: "山脊高尔夫球场", type: "public", suburb: "Barden Ridge",
     address: "Recreation Drive off New Illawarra Road, Barden Ridge, NSW 2234",
     lat: -34.0430, lon: 151.0080,
     holes: 18, par: 72,
@@ -674,7 +675,7 @@ const courses = [
     sourceUrl: "https://theridgegolf.com.au/cms/golf/tee-times-prices/"
   },
   {
-    name: "Woolooware Golf Club", type: "public", suburb: "Woolooware",
+    name: "Woolooware Golf Club", nameCn: "沃卢瓦高尔夫俱乐部", type: "public", suburb: "Woolooware",
     address: "1R Harnleigh Avenue, Woolooware, NSW 2230",
     lat: -34.0450, lon: 151.1330,
     holes: 18, par: 70,
@@ -687,7 +688,7 @@ const courses = [
     sourceUrl: "https://wooloowaregolfclub.com.au/green-fees/"
   },
   {
-    name: "Sylvania Par 3 Golf", type: "public", suburb: "Sylvania Waters",
+    name: "Sylvania Par 3 Golf", nameCn: "西尔瓦尼亚三杆高尔夫球场", type: "public", suburb: "Sylvania Waters",
     address: "223B Belgrave Esplanade, Sylvania Waters, NSW 2224",
     lat: -34.0180, lon: 151.1060,
     holes: 9, par: "27（9洞全部Par 3短打型球场）",
@@ -700,7 +701,7 @@ const courses = [
     sourceUrl: "https://sylvaniapar3golfandsoccer.com.au/par-3-golf/"
   },
   {
-    name: "Cronulla Golf Club", type: "private", suburb: "Cronulla",
+    name: "Cronulla Golf Club", nameCn: "克罗努拉高尔夫俱乐部", type: "private", suburb: "Cronulla",
     address: "Corner Hume & Elouera Roads, Cronulla, NSW 2230",
     lat: -34.0530, lon: 151.1520,
     holes: 18, par: 70,
@@ -713,7 +714,7 @@ const courses = [
     sourceUrl: "https://www.cronullagolf.com.au/cms/"
   },
   {
-    name: "Georges River Golf Club", type: "public", suburb: "Georges Hall",
+    name: "Georges River Golf Club", nameCn: "乔治河高尔夫俱乐部", type: "public", suburb: "Georges Hall",
     address: "255 Henry Lawson Drive, Georges Hall, NSW 2198",
     lat: -33.9130, lon: 150.9850,
     holes: 18, par: 70,
@@ -726,7 +727,7 @@ const courses = [
     sourceUrl: "https://georgesrivergolf.com.au/green-fees/"
   },
   {
-    name: "Avondale Golf Club", type: "private", suburb: "Pymble",
+    name: "Avondale Golf Club", nameCn: "埃文代尔高尔夫俱乐部", type: "private", suburb: "Pymble",
     address: "Avondale Golf Club, Pymble, NSW 2073",
     lat: -33.7370, lon: 151.1330,
     holes: 18, par: 71,
@@ -739,7 +740,7 @@ const courses = [
     sourceUrl: "https://avondalegolfcourse.com/membership/"
   },
   {
-    name: "Cammeray Golf Club", type: "public", suburb: "Cremorne",
+    name: "Cammeray Golf Club", nameCn: "卡姆雷高尔夫俱乐部", type: "public", suburb: "Cremorne",
     address: "Park Avenue, Cremorne, NSW 2090",
     lat: -33.8270, lon: 151.2140,
     holes: 9, par: 3,
@@ -752,7 +753,7 @@ const courses = [
     sourceUrl: "https://cammeraygolf.com.au/"
   },
   {
-    name: "Castle Cove Country Club", type: "public", suburb: "Castle Cove",
+    name: "Castle Cove Country Club", nameCn: "城堡湾乡村俱乐部", type: "public", suburb: "Castle Cove",
     address: "68 Deepwater Road, Castle Cove, NSW 2069",
     lat: -33.7960, lon: 151.2080,
     holes: 9, par: "N/A - 未公开（9洞球场，14个发球台可打18洞）",
@@ -765,7 +766,7 @@ const courses = [
     sourceUrl: "https://www.castlecovegolf.com.au/cms/golf/public-golf/"
   },
   {
-    name: "Gordon Golf Club", type: "public", suburb: "Gordon",
+    name: "Gordon Golf Club", nameCn: "戈登高尔夫俱乐部", type: "public", suburb: "Gordon",
     address: "2 Lynn Ridge Avenue, Gordon, NSW 2072",
     lat: -33.7560, lon: 151.1550,
     holes: 18, par: 65,
@@ -778,7 +779,7 @@ const courses = [
     sourceUrl: "https://www.gordongolfcourse.com.au/cms/golf/"
   },
   {
-    name: "Manly Golf Club", type: "private", suburb: "Manly",
+    name: "Manly Golf Club", nameCn: "曼利高尔夫俱乐部", type: "private", suburb: "Manly",
     address: "38 Balgowlah Road, Manly, NSW 2095",
     lat: -33.7970, lon: 151.2650,
     holes: 18, par: 71,
@@ -791,7 +792,7 @@ const courses = [
     sourceUrl: "https://www.manlygolf.com.au/"
   },
   {
-    name: "Monash Country Club", type: "private", suburb: "Ingleside",
+    name: "Monash Country Club", nameCn: "莫纳什乡村俱乐部", type: "private", suburb: "Ingleside",
     address: "256 Powderworks Road, Ingleside, NSW 2101",
     lat: -33.6820, lon: 151.2680,
     holes: 18, par: "N/A - 未公开",
@@ -804,7 +805,7 @@ const courses = [
     sourceUrl: "https://www.golfaustralia.com.au/feature/review-monash-country-club-608534"
   },
   {
-    name: "Mona Vale Golf Club", type: "public", suburb: "Mona Vale",
+    name: "Mona Vale Golf Club", nameCn: "莫纳维尔高尔夫俱乐部", type: "public", suburb: "Mona Vale",
     address: "3 Golf Avenue, Mona Vale, NSW 2103",
     lat: -33.6800, lon: 151.3020,
     holes: 18, par: 72,
@@ -817,7 +818,7 @@ const courses = [
     sourceUrl: "https://monavalegolfclub.golfer.com.au/green-fees/0/24566"
   },
   {
-    name: "Muirfield Golf Club", type: "semi-private", suburb: "North Rocks",
+    name: "Muirfield Golf Club", nameCn: "缪尔菲尔德高尔夫俱乐部", type: "semi-private", suburb: "North Rocks",
     address: "Barclay Road, North Rocks, NSW 2151",
     lat: -33.7770, lon: 151.0290,
     holes: 18, par: 69,
@@ -830,7 +831,7 @@ const courses = [
     sourceUrl: "https://www.muirfieldgolf.com.au/cms/golf/public-golf/"
   },
   {
-    name: "North Ryde Golf Club", type: "semi-private", suburb: "East Ryde",
+    name: "North Ryde Golf Club", nameCn: "北莱德高尔夫俱乐部", type: "semi-private", suburb: "East Ryde",
     address: "Twin Road, East Ryde, NSW 2113",
     lat: -33.8000, lon: 151.1350,
     holes: 18, par: 69,
@@ -843,7 +844,7 @@ const courses = [
     sourceUrl: "https://www.northrydegolfclub.com.au/golf/play-golf/"
   },
   {
-    name: "North Turramurra Golf Course", type: "public", suburb: "North Turramurra",
+    name: "North Turramurra Golf Course", nameCn: "北塔拉穆拉高尔夫球场", type: "public", suburb: "North Turramurra",
     address: "361A Bobbin Head Road, North Turramurra, NSW 2074",
     lat: -33.7108, lon: 151.1466,
     holes: 18, par: 68,
@@ -856,7 +857,7 @@ const courses = [
     sourceUrl: "https://www.krg.nsw.gov.au/Things-to-do/Sport-and-fitness/Golf/North-Turramurra-Golf-Course"
   },
   {
-    name: "Northbridge Golf Club", type: "public", suburb: "Northbridge",
+    name: "Northbridge Golf Club", nameCn: "北桥高尔夫俱乐部", type: "public", suburb: "Northbridge",
     address: "296C Sailors Bay Road, Northbridge, NSW 2063",
     lat: -33.8145, lon: 151.2222,
     holes: 18, par: 64,
@@ -869,7 +870,7 @@ const courses = [
     sourceUrl: "https://northbridgegolfclub.com.au/"
   },
   {
-    name: "Pymble Golf Club", type: "private", suburb: "Pymble",
+    name: "Pymble Golf Club", nameCn: "皮姆布尔高尔夫俱乐部", type: "private", suburb: "Pymble",
     address: "Cowan Road, St Ives, NSW 2075",
     lat: -33.7280, lon: 151.1590,
     holes: 18, par: 72,
@@ -882,7 +883,7 @@ const courses = [
     sourceUrl: "https://www.pymblegolf.com.au/cms/"
   },
   {
-    name: "Roseville Golf Club", type: "private", suburb: "Roseville",
+    name: "Roseville Golf Club", nameCn: "罗斯维尔高尔夫俱乐部", type: "private", suburb: "Roseville",
     address: "4 Links Avenue, Roseville, NSW 2069",
     lat: -33.7789, lon: 151.1815,
     holes: 18, par: "66（男子）/ 67（女子）",
@@ -895,7 +896,7 @@ const courses = [
     sourceUrl: "https://www.golfnsw.org.au/golf-clubs/roseville-golf-club/"
   },
   {
-    name: "Ryde-Parramatta Golf Club", type: "private", suburb: "West Ryde",
+    name: "Ryde-Parramatta Golf Club", nameCn: "莱德-帕拉马塔高尔夫俱乐部", type: "private", suburb: "West Ryde",
     address: "1156 Victoria Road, West Ryde, NSW 2114",
     lat: -33.8080, lon: 151.0850,
     holes: 18, par: "71（球会）/ 72（澳洲评级）",
@@ -908,7 +909,7 @@ const courses = [
     sourceUrl: "https://www.rydeparramatta.com.au/the-course"
   },
   {
-    name: "Terrey Hills Golf & Country Club", type: "private", suburb: "Terrey Hills",
+    name: "Terrey Hills Golf & Country Club", nameCn: "特里山高尔夫乡村俱乐部", type: "private", suburb: "Terrey Hills",
     address: "116 Booralie Road, Terrey Hills, NSW 2084",
     lat: -33.6890, lon: 151.2270,
     holes: 18, par: 72,
@@ -921,7 +922,7 @@ const courses = [
     sourceUrl: "https://www.terreyhillsgolf.com.au/cms/"
   },
   {
-    name: "Balgowlah Golf Club", type: "semi-private", suburb: "Balgowlah",
+    name: "Balgowlah Golf Club", nameCn: "巴尔戈瓦高尔夫俱乐部", type: "semi-private", suburb: "Balgowlah",
     address: "506 Sydney Road, Balgowlah, NSW 2093",
     lat: -33.7930, lon: 151.2610,
     holes: 9, par: 66,
@@ -934,7 +935,7 @@ const courses = [
     sourceUrl: "https://www.balgowlahgolfclub.com.au/cms/"
   },
   {
-    name: "Bayview Golf Club", type: "semi-private", suburb: "Mona Vale",
+    name: "Bayview Golf Club", nameCn: "湾景高尔夫俱乐部", type: "semi-private", suburb: "Mona Vale",
     address: "1825 Pittwater Road, Mona Vale, NSW 2103",
     lat: -33.6767, lon: 151.2990,
     holes: 18, par: 71,
@@ -947,7 +948,7 @@ const courses = [
     sourceUrl: "https://bayviewgolfclub.com.au/cms/lets-play-golf/green-fees-competition-social-play/"
   },
   {
-    name: "Wakehurst Golf Club", type: "semi-private", suburb: "Seaforth (Clontarf/Allambie Heights)",
+    name: "Wakehurst Golf Club", nameCn: "韦克赫斯特高尔夫俱乐部", type: "semi-private", suburb: "Seaforth (Clontarf/Allambie Heights)",
     address: "Upper Clontarf Street, Seaforth, NSW 2092",
     lat: -33.7930, lon: 151.2470,
     holes: 18, par: 72,
@@ -960,7 +961,7 @@ const courses = [
     sourceUrl: "https://www.wakehurstgolf.com.au/cms/contact-us/"
   },
   {
-    name: "Palm Beach Golf Club", type: "public", suburb: "Palm Beach",
+    name: "Palm Beach Golf Club", nameCn: "棕榈滩高尔夫俱乐部", type: "public", suburb: "Palm Beach",
     address: "2 Beach Road, Palm Beach, NSW 2108",
     lat: -33.5990, lon: 151.3230,
     holes: 9, par: 64,
@@ -973,7 +974,7 @@ const courses = [
     sourceUrl: "https://www.palmbeachgolf.com.au/green-fees"
   },
   {
-    name: "Avalon Golf Course", type: "public", suburb: "Avalon Beach",
+    name: "Avalon Golf Course", nameCn: "阿瓦隆高尔夫球场", type: "public", suburb: "Avalon Beach",
     address: "32 Old Barrenjoey Road, Avalon Beach, NSW 2107",
     lat: -33.6350, lon: 151.3300,
     holes: 9, par: 31,
@@ -986,7 +987,7 @@ const courses = [
     sourceUrl: "https://avalongolfcourse.com.au/fees/"
   },
   {
-    name: "Parramatta Golf Club", type: "public", suburb: "Parramatta",
+    name: "Parramatta Golf Club", nameCn: "帕拉马塔高尔夫俱乐部", type: "public", suburb: "Parramatta",
     address: "Park Parade, Parramatta NSW 2150",
     lat: -33.8090, lon: 151.0080,
     holes: 9, par: 62,
@@ -999,7 +1000,7 @@ const courses = [
     sourceUrl: "https://www.golfpass.com/travel-advisor/courses/19252-parramatta-golf-club"
   },
   {
-    name: "Woodville Golf Club", type: "public", suburb: "Guildford（近Parramatta）",
+    name: "Woodville Golf Club", nameCn: "伍德维尔高尔夫俱乐部", type: "public", suburb: "Guildford（近Parramatta）",
     address: "118 Rawson Road, Guildford NSW 2161",
     lat: -33.8570, lon: 150.9970,
     holes: 18, par: 72,
@@ -1012,7 +1013,7 @@ const courses = [
     sourceUrl: "https://www.cumberland.nsw.gov.au/woodville-public-golf-course"
   },
   {
-    name: "Oatlands Golf Club", type: "private", suburb: "Oatlands",
+    name: "Oatlands Golf Club", nameCn: "奥特兰兹高尔夫俱乐部", type: "private", suburb: "Oatlands",
     address: "94 Bettington Road, Oatlands NSW 2117",
     lat: -33.7960, lon: 151.0270,
     holes: 18, par: 70,
@@ -1025,7 +1026,7 @@ const courses = [
     sourceUrl: "https://www.oatlandsgolf.com.au/cms/"
   },
   {
-    name: "Rosnay Golf Club（Auburn Golf Course）", type: "public", suburb: "Auburn",
+    name: "Rosnay Golf Club（Auburn Golf Course）", nameCn: "罗斯奈高尔夫俱乐部（奥本高尔夫球场）", type: "public", suburb: "Auburn",
     address: "5 Weymouth Avenue, Auburn NSW 2144",
     lat: -33.8490, lon: 151.0330,
     holes: 18, par: 68,
@@ -1038,7 +1039,7 @@ const courses = [
     sourceUrl: "https://www.cumberland.nsw.gov.au/auburn-golf-course-rosnay"
   },
   {
-    name: "Cumberland Country Golf Club", type: "semi-private", suburb: "Greystanes",
+    name: "Cumberland Country Golf Club", nameCn: "坎伯兰乡村高尔夫俱乐部", type: "semi-private", suburb: "Greystanes",
     address: "248 Old Prospect Road, Greystanes NSW 2145",
     lat: -33.8130, lon: 150.9440,
     holes: 18, par: 71,
@@ -1051,7 +1052,7 @@ const courses = [
     sourceUrl: "https://www.cumberlandgolf.com.au/gfgreenfees/"
   },
   {
-    name: "Ashlar Golf Club", type: "public", suburb: "Blacktown",
+    name: "Ashlar Golf Club", nameCn: "阿什勒高尔夫俱乐部", type: "public", suburb: "Blacktown",
     address: "Springfield Avenue, Blacktown NSW 2148",
     lat: -33.7720, lon: 150.9060,
     holes: 18, par: 71,
@@ -1064,7 +1065,7 @@ const courses = [
     sourceUrl: "https://www.golfpass.com/travel-advisor/courses/19122-ashlar-golf-club"
   },
   {
-    name: "Sefton Golf Course", type: "public", suburb: "Sefton（Yagoona）",
+    name: "Sefton Golf Course", nameCn: "塞夫顿高尔夫球场", type: "public", suburb: "Sefton（Yagoona）",
     address: "160 Rose Street, Sefton NSW 2162",
     lat: -33.8960, lon: 151.0170,
     holes: 18, par: 54,
@@ -1077,7 +1078,7 @@ const courses = [
     sourceUrl: "https://www.cbcity.nsw.gov.au/recreation/parks-and-reserve/sefton-golf-club"
   },
   {
-    name: "Fairfield Golf Course", type: "public", suburb: "Prairiewood",
+    name: "Fairfield Golf Course", nameCn: "费尔菲尔德高尔夫球场", type: "public", suburb: "Prairiewood",
     address: "Corner of Smithfield Road & Beavors Street, Prairiewood NSW 2176",
     lat: -33.8680, lon: 150.9330,
     holes: 18, par: 69,
@@ -1090,7 +1091,7 @@ const courses = [
     sourceUrl: "https://www.golfnsw.org.au/golf-clubs/fairfield-golf-course/"
   },
   {
-    name: "Dunheved Golf Club", type: "semi-private", suburb: "St Marys",
+    name: "Dunheved Golf Club", nameCn: "邓希弗德高尔夫俱乐部", type: "semi-private", suburb: "St Marys",
     address: "176 Links Road, St Marys NSW 2760",
     lat: -33.7660, lon: 150.7900,
     holes: 18, par: 72,
@@ -1103,7 +1104,7 @@ const courses = [
     sourceUrl: "http://www.dunhevedgolfclub.com.au/"
   },
   {
-    name: "Orchard Hills Golf Club（Colonial Golf & FootGolf Course）", type: "public", suburb: "Werrington",
+    name: "Orchard Hills Golf Club（Colonial Golf & FootGolf Course）", nameCn: "果园山高尔夫俱乐部（殖民地高尔夫及足球高尔夫球场）", type: "public", suburb: "Werrington",
     address: "Lot 1 Werrington Road, Werrington NSW 2747",
     lat: -33.7690, lon: 150.7480,
     holes: 9, par: 58,
@@ -1116,7 +1117,7 @@ const courses = [
     sourceUrl: "https://www.golfnsw.org.au/golf-clubs/orchard-hills-golf-club/"
   },
   {
-    name: "Leonay Golf Club", type: "public", suburb: "Emu Plains",
+    name: "Leonay Golf Club", nameCn: "利奥奈高尔夫俱乐部", type: "public", suburb: "Emu Plains",
     address: "1 Leonay Parade, Leonay NSW 2750",
     lat: -33.7440, lon: 150.6470,
     holes: 18, par: 66,
@@ -1129,7 +1130,7 @@ const courses = [
     sourceUrl: "https://leonaygolfclub.com.au/"
   },
   {
-    name: "Penrith Golf & Recreation Club", type: "public", suburb: "Orchard Hills（近Penrith）",
+    name: "Penrith Golf & Recreation Club", nameCn: "彭里斯高尔夫及休闲俱乐部", type: "public", suburb: "Orchard Hills（近Penrith）",
     address: "1939 The Northern Road, Orchard Hills NSW 2748",
     lat: -33.7860, lon: 150.7280,
     holes: 18, par: 72,
@@ -1142,7 +1143,7 @@ const courses = [
     sourceUrl: "https://www.penrithgolf.org/green-fees/"
   },
   {
-    name: "Stonecutters Ridge Golf Club", type: "semi-private", suburb: "Colebee",
+    name: "Stonecutters Ridge Golf Club", nameCn: "采石岭高尔夫俱乐部", type: "semi-private", suburb: "Colebee",
     address: "86 Stonecutters Drive, Colebee NSW 2761",
     lat: -33.7080, lon: 150.8570,
     holes: 18, par: 71,
@@ -1155,7 +1156,7 @@ const courses = [
     sourceUrl: "https://www.stonecuttersgc.com.au/cms/golf/"
   },
   {
-    name: "Cabramatta Golf Club", type: "public", suburb: "Cabramatta",
+    name: "Cabramatta Golf Club", nameCn: "卡布拉马塔高尔夫俱乐部", type: "public", suburb: "Cabramatta",
     address: "Corner Cabramatta Road & Cumberland Highway, Cabramatta NSW 2166",
     lat: -33.8930, lon: 150.9350,
     holes: 18, par: 70,
@@ -1168,7 +1169,7 @@ const courses = [
     sourceUrl: "https://www.cabragolf.com.au/social-golf/"
   },
   {
-    name: "Oak Point Golf Club（原 Liverpool Golf Club）", type: "semi-private", suburb: "Lansvale",
+    name: "Oak Point Golf Club（原 Liverpool Golf Club）", nameCn: "橡树角高尔夫俱乐部（原利物浦高尔夫俱乐部）", type: "semi-private", suburb: "Lansvale",
     address: "Hollywood Drive, Lansvale NSW 2166",
     lat: -33.9130, lon: 150.9530,
     holes: 18, par: 72,
@@ -1181,7 +1182,7 @@ const courses = [
     sourceUrl: "https://opgc.au/cms/"
   },
   {
-    name: "Brighton Lakes Recreation & Golf Club（原 New Brighton Golf Club 更名重建）", type: "public", suburb: "Moorebank",
+    name: "Brighton Lakes Recreation & Golf Club（原 New Brighton Golf Club 更名重建）", nameCn: "布莱顿湖休闲高尔夫俱乐部（原新布莱顿高尔夫俱乐部更名重建）", type: "public", suburb: "Moorebank",
     address: "43 Brickmakers Drive, Moorebank NSW 2170",
     lat: -33.9450, lon: 150.9450,
     holes: 18, par: 70,
@@ -1194,7 +1195,7 @@ const courses = [
     sourceUrl: "https://www.brightonlakesrgc.com.au/"
   },
   {
-    name: "Macquarie Links International Golf Club", type: "private", suburb: "Macquarie Links",
+    name: "Macquarie Links International Golf Club", nameCn: "麦考瑞林克斯国际高尔夫俱乐部", type: "private", suburb: "Macquarie Links",
     address: "23 Macquarie Links Drive, Macquarie Links NSW 2565",
     lat: -33.9700, lon: 150.8900,
     holes: 18, par: 72,
@@ -1207,7 +1208,7 @@ const courses = [
     sourceUrl: "https://www.macquarielinksgolfclub.com.au/macquarie-links-international-golf-club/"
   },
   {
-    name: "Campbelltown Golf Club", type: "public", suburb: "Glen Alpine",
+    name: "Campbelltown Golf Club", nameCn: "坎贝尔敦高尔夫俱乐部", type: "public", suburb: "Glen Alpine",
     address: "1 Golf Course Drive, Glen Alpine NSW 2560",
     lat: -34.0850, lon: 150.8150,
     holes: 18, par: 72,
@@ -1220,7 +1221,7 @@ const courses = [
     sourceUrl: "https://www.campbelltowngolfclub.com.au/cms/golffeesandbookings/"
   },
   {
-    name: "Macarthur Grange Country Club", type: "public", suburb: "Kearns",
+    name: "Macarthur Grange Country Club", nameCn: "麦克阿瑟格兰奇乡村俱乐部", type: "public", suburb: "Kearns",
     address: "Lot 18 Raby Road, Kearns NSW 2558",
     lat: -34.0350, lon: 150.8150,
     holes: 18, par: 70,
@@ -1233,7 +1234,7 @@ const courses = [
     sourceUrl: "https://macarthurgrange.com.au/play-golf/"
   },
   {
-    name: "Camden Golf Club（Studley Park）", type: "semi-private", suburb: "Narellan",
+    name: "Camden Golf Club（Studley Park）", nameCn: "卡姆登高尔夫俱乐部（斯塔德利公园）", type: "semi-private", suburb: "Narellan",
     address: "50 Lodges Road, Narellan NSW 2567",
     lat: -34.0500, lon: 150.7250,
     holes: 18, par: "71（第三方来源标注71，另有来源标注73，官方未确认）",
@@ -1246,7 +1247,7 @@ const courses = [
     sourceUrl: "https://www.camdengolfclub.com.au/golf"
   },
   {
-    name: "Lakeside Golf Club Camden（Camden Lakeside Country Club）", type: "public", suburb: "Catherine Field",
+    name: "Lakeside Golf Club Camden（Camden Lakeside Country Club）", nameCn: "卡姆登湖畔高尔夫俱乐部", type: "public", suburb: "Catherine Field",
     address: "50 Raby Road, Catherine Field NSW 2171",
     lat: -34.0000, lon: 150.7550,
     holes: 18, par: 72,
@@ -1259,7 +1260,7 @@ const courses = [
     sourceUrl: "https://camdenlakeside.com.au/"
   },
   {
-    name: "Camden Valley Golf Resort", type: "public", suburb: "Catherine Field",
+    name: "Camden Valley Golf Resort", nameCn: "卡姆登谷高尔夫度假村", type: "public", suburb: "Catherine Field",
     address: "810 Camden Valley Way, Catherine Field NSW 2171",
     lat: -33.9850, lon: 150.7700,
     holes: "27（分为三个9洞球场组合）", par: "36+36（各9洞组合，官方总par未公开）",
@@ -1272,7 +1273,7 @@ const courses = [
     sourceUrl: "https://www.1golf.eu/en/club/camden-valley-golf-resort/"
   },
   {
-    name: "Antill Park Country Golf Club", type: "public", suburb: "Picton",
+    name: "Antill Park Country Golf Club", nameCn: "安蒂尔公园乡村高尔夫俱乐部", type: "public", suburb: "Picton",
     address: "Jarvisfield Road, Picton NSW 2571",
     lat: -34.1750, lon: 150.6100,
     holes: 18, par: 70,
@@ -1285,7 +1286,7 @@ const courses = [
     sourceUrl: "https://antillpark.com.au/golf/competitions-golf-fees/"
   },
   {
-    name: "Richmond Golf Club", type: "public", suburb: "Richmond",
+    name: "Richmond Golf Club", nameCn: "里士满高尔夫俱乐部", type: "public", suburb: "Richmond",
     address: "Bosworth Road, Richmond, NSW 2753",
     lat: -33.5928, lon: 150.7508,
     holes: 18, par: 70,
@@ -1298,7 +1299,7 @@ const courses = [
     sourceUrl: "https://www.richmondgolfclub.com.au/cms/bookings/"
   },
   {
-    name: "Windsor Country Golf Club", type: "public", suburb: "South Windsor",
+    name: "Windsor Country Golf Club", nameCn: "温莎乡村高尔夫俱乐部", type: "public", suburb: "South Windsor",
     address: "51 McQuade Avenue, South Windsor, NSW 2756",
     lat: -33.6103, lon: 150.8154,
     holes: 18, par: "71（第三方数据库，官方未确认）",
@@ -1311,7 +1312,7 @@ const courses = [
     sourceUrl: "https://windsorgolfclub.com.au/golf/pricing/"
   },
   {
-    name: "Riverside Oaks Golf Resort（Bungool + Gangurru 双球场度假村）", type: "public", suburb: "Cattai",
+    name: "Riverside Oaks Golf Resort（Bungool + Gangurru 双球场度假村）", nameCn: "河畔橡树高尔夫度假村", type: "public", suburb: "Cattai",
     address: "74 O'Briens Road, Cattai, NSW 2756",
     lat: -33.5386, lon: 150.9219,
     holes: "36（两个18洞球场：Bungool 球场 + Gangurru 球场）", par: "72（两球场均为标准72杆）",
@@ -1324,7 +1325,7 @@ const courses = [
     sourceUrl: "https://www.riversideoaks.com.au/cms/public-bookings/"
   },
   {
-    name: "Lynwood Country Club", type: "semi-private", suburb: "Pitt Town",
+    name: "Lynwood Country Club", nameCn: "林伍德乡村俱乐部", type: "semi-private", suburb: "Pitt Town",
     address: "4 Pitt Town Bottoms Road, Pitt Town, NSW 2756",
     lat: -33.5651, lon: 150.8577,
     holes: 18, par: 72,
@@ -1337,7 +1338,7 @@ const courses = [
     sourceUrl: "https://www.lynwood.com.au/green-fees-and-bookings"
   },
   {
-    name: "Glenmore Heritage Valley Golf Club（Glenmore Mulgoa Golf Club）", type: "semi-private", suburb: "Mulgoa",
+    name: "Glenmore Heritage Valley Golf Club（Glenmore Mulgoa Golf Club）", nameCn: "格伦莫尔遗产谷高尔夫俱乐部", type: "semi-private", suburb: "Mulgoa",
     address: "690 Mulgoa Road, Mulgoa, NSW 2745",
     lat: -33.7911, lon: 150.6607,
     holes: "27（The Links 18 + The Valley 18，共用9洞）", par: "72（The Links 18号道）",
@@ -1350,7 +1351,7 @@ const courses = [
     sourceUrl: "https://glenmoregolf.com.au/our-courses/"
   },
   {
-    name: "Twin Creeks Private Golf & Country Club", type: "private", suburb: "Luddenham（近Mulgoa）",
+    name: "Twin Creeks Private Golf & Country Club", nameCn: "双溪私人高尔夫乡村俱乐部", type: "private", suburb: "Luddenham（近Mulgoa）",
     address: "2-8 Twin Creeks Drive, Luddenham, NSW 2745（部分资料标注为Mulgoa地区）",
     lat: -33.8264, lon: 150.6994,
     holes: 18, par: 72,
@@ -1363,7 +1364,7 @@ const courses = [
     sourceUrl: "https://twincreeksgolf.au/tee-times-green-fees/"
   },
   {
-    name: "Castle Hill Country Club", type: "private", suburb: "Norwest（近Baulkham Hills）",
+    name: "Castle Hill Country Club", nameCn: "城堡山乡村俱乐部", type: "private", suburb: "Norwest（近Baulkham Hills）",
     address: "7 Spurway Drive, Norwest, NSW 2153",
     lat: -33.7208, lon: 150.9614,
     holes: 18, par: 72,
@@ -1376,7 +1377,7 @@ const courses = [
     sourceUrl: "https://www.castlehillcountryclub.com.au/cms/"
   },
   {
-    name: "Asquith Golf Club", type: "public", suburb: "Mount Colah",
+    name: "Asquith Golf Club", nameCn: "阿斯奎斯高尔夫俱乐部", type: "public", suburb: "Mount Colah",
     address: "Lord Street, Mount Colah, NSW 2079",
     lat: -33.6614, lon: 151.1214,
     holes: 18, par: 70,
@@ -1389,7 +1390,7 @@ const courses = [
     sourceUrl: "https://www.asquithgolfclub.com.au/cms/public-bookings/"
   },
   {
-    name: "Wallacia Panthers Golf & Country Club", type: "public", suburb: "Wallacia",
+    name: "Wallacia Panthers Golf & Country Club", nameCn: "沃拉西亚黑豹高尔夫乡村俱乐部", type: "public", suburb: "Wallacia",
     address: "13 Park Road, Wallacia, NSW 2745",
     lat: -33.8506, lon: 150.6969,
     holes: 18, par: "N/A - 未公开",
@@ -1402,7 +1403,7 @@ const courses = [
     sourceUrl: "https://www.golfindustrycentral.com.au/golf-industry-news/cemetery-a-dead-certainty-for-golf-club-site-at-wallacia/"
   },
   {
-    name: "Botany Golf Course（Botany Golf Club）", type: "public", suburb: "Botany",
+    name: "Botany Golf Course（Botany Golf Club）", nameCn: "博塔尼高尔夫球场", type: "public", suburb: "Botany",
     address: "1434 Botany Road, Botany, NSW 2019",
     lat: -33.9482, lon: 151.1990,
     holes: 9, par: 33,
@@ -1456,7 +1457,7 @@ courses.forEach(c => {
   const marker = L.circleMarker([c.lat, c.lon], {
     radius: 8, weight: 2, color: "#0c1712", fillColor: typeColor[c.type], fillOpacity: 0.9
   }).addTo(map);
-  marker.bindPopup(`<b>${c.name}</b><br>${typeLabel[c.type]} · ${c.suburb}<br><a href="${c.website}" target="_blank" rel="noopener">官网 →</a> · <a href="${satelliteUrl(c)}" target="_blank" rel="noopener">卫星图 →</a>`);
+  marker.bindPopup(`<b>${c.name}</b><br>${c.nameCn}<br>${typeLabel[c.type]} · ${c.suburb}<br><a href="${c.website}" target="_blank" rel="noopener">官网 →</a> · <a href="${satelliteUrl(c)}" target="_blank" rel="noopener">卫星图 →</a>`);
   marker.on('click', () => focusCourse(c.id));
   markerById[c.id] = marker;
 });
@@ -1491,7 +1492,10 @@ function cardHTML(c){
   return `
   <div class="card" data-id="${c.id}">
     <div class="card-top">
-      <div class="course-name">${c.name}</div>
+      <div>
+        <div class="course-name">${c.name}</div>
+        <div class="course-name-cn">${c.nameCn}</div>
+      </div>
       <div class="type-badge ${c.type}">${typeLabel[c.type]}</div>
     </div>
     <div class="course-meta">${c.suburb}, Sydney · 距市中心（悉尼2000）直线约 ${c.distanceFromCbdKm.toFixed(1)} 公里</div>
